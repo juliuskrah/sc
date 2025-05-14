@@ -1,0 +1,75 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.graalvm.buildtools.native' version '0.10.6'
+}
+
+group = 'com.simplecommerce.ai'
+version = '0.0.1-SNAPSHOT'
+description = 'Simple Commerce'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springAiVersion', "1.0.0-M8")
+    set('scVersion', project.version)
+    set('picocliVersion', "4.7.7")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation('org.springframework.ai:spring-ai-starter-model-ollama') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
+    }
+    implementation "info.picocli:picocli-spring-boot-starter:${picocliVersion}"
+	implementation "info.picocli:picocli-shell-jline3:${picocliVersion}"
+	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+springBoot {
+    buildInfo {
+		properties {
+			additional = [
+				'description' : project.getDescription(),
+			]
+		}
+	}
+}
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'sc'
+            buildArgs.add('--verbose')
+        }
+    }
+    metadataRepository {
+        enabled = true
+    }
+}
