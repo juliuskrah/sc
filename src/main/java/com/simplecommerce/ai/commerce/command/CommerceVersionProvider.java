@@ -17,7 +17,8 @@ public class CommerceVersionProvider implements IVersionProvider {
         return new String[] {
             String.format("Simple Commerce \t%s", properties.getProperty("build.version", "unknown")),
             String.format("Build Time \t\t%s", properties.getProperty("build.time", "unknown")),
-            String.format("JVM \t\t\t%s", System.getProperty("java.version"))
+            "JVM \t\t\t${java.version}",
+            "OS \t\t\t${os.name} ${os.version} ${os.arch}",
         };
     }
 }
