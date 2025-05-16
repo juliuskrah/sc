@@ -1,7 +1,14 @@
 package com.simplecommerce.ai.commerce.chat;
 
-import org.springframework.ai.chat.model.ChatModel;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+
+import org.jline.reader.LineReader;
 import org.springframework.stereotype.Component;
+
+import com.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -14,13 +21,31 @@ import picocli.CommandLine.Parameters;
     name = "chat",
     description = "Chat with a bot",
     mixinStandardHelpOptions = true,
+    versionProvider = ChatbotVersionProvider.class,
     subcommands = CommandLine.HelpCommand.class
 )
 public class ChatCommand implements Runnable {
-    private final ChatModel chatModel;
+    private final ChatService chatService;
+    private final LineReader reader;
+    private PrintWriter out = new PrintWriter(System.out, false);
+    private static final String PROMPT = "sc> ";
 
-    public ChatCommand(ChatModel chatModel) {
-        this.chatModel = chatModel;
+    public ChatCommand(ChatService chatService, LineReader reader) {
+        this.chatService = chatService;
+        this.reader = reader;
+    }
+
+    private String fromPipe() {
+        var messageBuilder = new StringBuilder();
+        try (var reader = new BufferedReader(new InputStreamReader(System.in))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                messageBuilder.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return messageBuilder.toString().trim();
     }
 
     @Parameters(
@@ -40,11 +65,24 @@ public class ChatCommand implements Runnable {
 
     @Override
     public void run() {
-        var streamingResponse = chatModel.stream(message);
+        if (message == null || message.isEmpty()) {
+            message = fromPipe();
+        }
+        var streamingResponse = chatService.sendAndStreamMessage(message, model);
         streamingResponse.toStream().forEach(chunk -> {
-            System.out.print(Ansi.AUTO.string(chunk));
-            System.out.flush();
+            out.print(Ansi.AUTO.string(chunk));
+            out.flush();
         });
-        System.out.println(); // Add a newline at the end
+        out.println();
+        // System.out.println("Terminal type: " + reader.getTerminal().getClass().getSimpleName());
+        // out = reader.getTerminal().writer();
+        // while (true) {
+        //     var line = reader.readLine(PROMPT);
+        //     if ("exit".equals(line) || "quit".equals(line)) {
+        //         break;
+        //     }
+        //     out.println("You entered: " + line);
+        //     reader.getTerminal().flush();
+        // }
     }
 }

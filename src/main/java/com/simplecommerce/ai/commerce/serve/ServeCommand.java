@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
 import com.simplecommerce.ai.commerce.service.ServiceInfo;
 import com.simplecommerce.ai.commerce.service.ServiceRegistry;
 
@@ -22,6 +23,7 @@ import picocli.CommandLine.Option;
     name = "serve",
     description = "Start a web service",
     mixinStandardHelpOptions = true,
+    versionProvider = ChatbotVersionProvider.class,
     subcommands = CommandLine.HelpCommand.class
 )
 public class ServeCommand implements Runnable {

@@ -158,7 +158,8 @@ public class Example {
             PicocliCommands picocliCommands = new PicocliCommands(cmd);
 
             Parser parser = new DefaultParser();
-            try (Terminal terminal = TerminalBuilder.builder().build()) {
+            try (Terminal terminal = TerminalBuilder.builder().system(true).build()) {
+                System.out.println("Terminal: " + terminal.getType());
                 SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
                 systemRegistry.register("help", picocliCommands);

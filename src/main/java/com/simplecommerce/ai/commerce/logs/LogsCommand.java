@@ -2,6 +2,8 @@ package com.simplecommerce.ai.commerce.logs;
 
 import org.springframework.stereotype.Component;
 
+import com.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -11,6 +13,7 @@ import picocli.CommandLine.Parameters;
     name = "logs",
     description = "Fetch the logs of a service",
     mixinStandardHelpOptions = true,
+    versionProvider = ChatbotVersionProvider.class,
     subcommands = {
         CommandLine.HelpCommand.class
     }

@@ -11,7 +11,7 @@ description = 'Simple Commerce'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(22)
 	}
 }
 
@@ -23,6 +23,7 @@ ext {
 	set('springAiVersion', "1.0.0-M8")
     set('scVersion', project.version)
     set('picocliVersion', "4.7.7")
+    set('jlineVersion', "3.30.0")
 }
 
 dependencies {
@@ -32,6 +33,10 @@ dependencies {
     implementation('org.springframework.ai:spring-ai-starter-model-ollama') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
     }
+	implementation "org.jline:jline:${jlineVersion}"
+	implementation "org.jline:jline-terminal:${jlineVersion}"
+	implementation "org.jline:jline-terminal-ffm:${jlineVersion}"
+	implementation "org.jline:jline-terminal-jni:${jlineVersion}"
     implementation "info.picocli:picocli-spring-boot-starter:${picocliVersion}"
 	implementation "info.picocli:picocli-shell-jline3:${picocliVersion}"
 	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"

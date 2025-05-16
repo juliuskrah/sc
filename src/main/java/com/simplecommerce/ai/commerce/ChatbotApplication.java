@@ -4,18 +4,15 @@ import org.jline.jansi.AnsiConsole;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import picocli.CommandLine;
-
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 public class ChatbotApplication {
 
     public static void main(String[] args) {
         AnsiConsole.systemInstall();
-        int exitCode = CommandLine.ExitCode.OK;
         try {
-            exitCode = SpringApplication.exit(SpringApplication.run(ChatbotApplication.class, args));
-        } finally {
+            int exitCode = SpringApplication.exit(SpringApplication.run(ChatbotApplication.class, args));
             System.exit(exitCode);
+        } finally {
             AnsiConsole.systemUninstall();
         }
     }

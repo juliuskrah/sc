@@ -17,7 +17,7 @@ import picocli.CommandLine.Help.Ansi;
     name = "sc",
     description = "A runtime for AI chatbots",
     mixinStandardHelpOptions = true,
-    versionProvider = CommerceVersionProvider.class,
+    versionProvider = ChatbotVersionProvider.class,
     subcommands = {
         ChatCommand.class,
         CommandLine.HelpCommand.class,
