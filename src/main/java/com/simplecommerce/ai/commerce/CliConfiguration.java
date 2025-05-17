@@ -23,9 +23,14 @@ public class CliConfiguration {
      */
     @Bean
     Terminal terminal() throws IOException {
-        return TerminalBuilder.builder()
-            .system(true)   
+        var terminal = TerminalBuilder.builder()
+            .system(true)
             .build();
+        terminal.handle(Terminal.Signal.INT, signal -> {
+            terminal.writer().println("Received SIG" + signal + " (CTR+C)");
+            terminal.flush();
+        });
+        return terminal;
     }
 
     @Bean
@@ -34,6 +39,7 @@ public class CliConfiguration {
             .terminal(terminal)
             .option(LineReader.Option.AUTO_FRESH_LINE, true)
             .option(LineReader.Option.HISTORY_BEEP, true)
+            .variable(LineReader.SECONDARY_PROMPT_PATTERN, "type 'exit' to 'quit'")
             .appName(appName)
             .build();
     }

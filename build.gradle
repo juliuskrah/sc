@@ -34,7 +34,6 @@ dependencies {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
     }
 	implementation "org.jline:jline:${jlineVersion}"
-	implementation "org.jline:jline-terminal:${jlineVersion}"
 	implementation "org.jline:jline-terminal-ffm:${jlineVersion}"
 	implementation "org.jline:jline-terminal-jni:${jlineVersion}"
     implementation "info.picocli:picocli-spring-boot-starter:${picocliVersion}"

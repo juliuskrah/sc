@@ -10,7 +10,7 @@ import com.simplecommerce.ai.commerce.stop.StopCommand;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Spec;
 
 @Component
 @Command(
@@ -28,11 +28,12 @@ import picocli.CommandLine.Help.Ansi;
     }
 )
 public class TopCommand implements Runnable {
+    @Spec
+    CommandLine.Model.CommandSpec spec;
 
     @Override
     public void run() {
-        String greeting = String.format("Show usage help");
-        System.out.println(Ansi.AUTO.string(greeting));
-        System.out.flush();
+        // If no subcommand is provided, print the help message
+        spec.commandLine().usage(System.out);
     }
 }
