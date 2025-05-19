@@ -1,0 +1,10 @@
+spring:
+  config:
+    import:
+    - "optional:file:${user.dir}/.sc/config[.yaml]"
+  ai:
+    model:
+      chat: ollama
+    ollama:
+      init:
+        pull-model-strategy: never

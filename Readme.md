@@ -22,7 +22,6 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
   - [stop](#stop)
     - [Parameters](#stop-parameters)
     - [Usage](#stop-usage)
-- [Reference Documentation](#reference-documentation)
 - [Development](#development)
   - [Lightweight Container with Cloud Native Buildpacks](#lightweight-container-with-cloud-native-buildpacks)
   - [Executable with Native Build Tools](#executable-with-native-build-tools)
@@ -36,17 +35,30 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
 
 This command allows you to chat with the Ollama API and other LLMs. You can use it to send messages and receive responses from the model.
 
-### Options {#chat-options}
+`chat` context is supported.
+- RAG
+- Memory
+- Vector DB
+- Embeddings
+- Files can be to provide context to the model. Workds starting with `@<protocol>:///path/to/file` are treated as files.
+  - `@file:///path/to/file` - Local file
+  - `@http://<url>` - Remote file
+  - `@https://<url>` - Remote file
+  - `@s3://<bucket>/<path>` - S3 file
+  - `@gcs://<bucket>/<path>` - GCS file
+  - `@azure://<container>/<path>` - Azure file
+
+### Options <a name="chat-options"></a>
 
 * `-m, --model`: Specify the model to use for the chat. <required>".
 * `--base-url`: Ollama API endpoint. The default is http://localhost:11434".
 * `-t, --temperature`: Specify the temperature for the model. The default is 0.3.
 
-### Parameters {#chat-parameters}
+### Parameters <a name="chat-parameters"></a>
 
 * `MESSAGE`: The prompt to send to the model.
 
-### Usage {#chat-usage}
+### Usage <a name="chat-usage"></a>
 
 ```bash
 sc chat --model llama3.2 --base-url http://localhost:11434 --temperature 0.3 "Hello, how are you?"
@@ -110,6 +122,16 @@ This command allows you to stop a running service.
 
 ```bash
 sc stop my-service
+```
+
+# FAQ
+
+## How do I enable logging?
+
+You can enable logging with the following environment variable:
+
+```bash
+export JAVA_TOOL_OPTIONS=-Dlogging.level.org.simplecommerce.ai.commerce=debug
 ```
 
 # Development
