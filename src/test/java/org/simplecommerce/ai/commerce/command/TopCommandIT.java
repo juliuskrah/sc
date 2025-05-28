@@ -1,4 +1,4 @@
-package org.simplecommerce.ai.commerce;
+package org.simplecommerce.ai.commerce.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
@@ -13,9 +13,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest(args = {"--base-url=http://localhost:11432"})
 @ActiveProfiles("test")
-class ChatbotApplicationTests {
+@SpringBootTest(args = {"--base-url=http://localhost:11432"})
+class TopCommandIT {
 	
 	private void bindAndAssert(Environment env, String expectedBaseUrl) {
 		BindResult<OllamaConnectionProperties> bindResult = Binder.get(env).bind("spring.ai.ollama",

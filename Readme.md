@@ -10,6 +10,11 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
     - [Options](#chat-options)
     - [Parameters](#chat-parameters)
     - [Usage](#chat-usage)
+  - [config](#config)
+    - [Options](#config-options)
+    - [Usage](#config-usage)
+  - [config init](#config-init)
+    - [Usage](#config-init-usage)
   - [logs](#logs)
     - [Options](#logs-options)
     - [Parameters](#logs-parameters)
@@ -22,6 +27,8 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
   - [stop](#stop)
     - [Parameters](#stop-parameters)
     - [Usage](#stop-usage)
+  - [Global Options](#global-options)
+- [FAQ](#faq)
 - [Development](#development)
   - [Lightweight Container with Cloud Native Buildpacks](#lightweight-container-with-cloud-native-buildpacks)
   - [Executable with Native Build Tools](#executable-with-native-build-tools)
@@ -35,18 +42,23 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
 
 This command allows you to chat with the Ollama API and other LLMs. You can use it to send messages and receive responses from the model.
 
-`chat` context is supported.
+`chat` context is implemented via:
+
 - RAG
-- Memory
-- Vector DB
-- Embeddings
-- Files can be to provide context to the model. Workds starting with `@<protocol>:///path/to/file` are treated as files.
-  - `@file:///path/to/file` - Local file
-  - `@http://<url>` - Remote file
-  - `@https://<url>` - Remote file
-  - `@s3://<bucket>/<path>` - S3 file
-  - `@gcs://<bucket>/<path>` - GCS file
-  - `@azure://<container>/<path>` - Azure file
+  - Documents are provided to the to the LLM through the following mechanisms:
+    - `file:///path/to/file` - Local file
+    - `https://<url>` - Remote file. Only https is supported.
+    - `s3://<bucket>/<key>` - S3 file
+    - `gcs://<bucket>/<path>` - GCS file
+    - `azure://<container>/<path>` - Azure file
+- Tools
+- Attachments
+
+`chat` memory is supported via:
+
+- RDBMS
+- neo4j
+- Cassandra
 
 ### Options <a name="chat-options"></a>
 
@@ -66,20 +78,76 @@ sc chat --model llama3.2 --base-url http://localhost:11434 --temperature 0.3 "He
 
 > Note: To use the `chat` command in interactive mode, you can omit the `MESSAGE` parameter. The command will then prompt you for input.
 
+## `config`
+
+This command allows you to view or set the configuration for the CLI. You can use it to manage settings such as the Ollama API endpoint and other CLI-specific configurations.
+
+### Options <a name="config-options"></a>
+
+* `--dir`: Show the configuration directory. This option will display the path to the directory where the configuration
+  files are stored. The default directory is `$HOME/.sc/` however this can be overridden by setting the `SC_CONFIG_DIR` environment variable.
+* `--file`: Show the configuration file. This option will display the path to the configuration file used by the CLI.
+* `--set`: Set a configuration setting. You need to provide the key and value in the format `key=value`.
+* `--get`: Get the value of a specific configuration setting. You need to provide the key.
+* `--unset`: Unset a configuration setting. You need to provide the key.
+
+### Usage <a name="config-usage"></a>
+
+View the configuration directory:
+
+```bash
+sc config --dir
+```
+
+View the configuration file:
+
+```bash
+sc config --file
+```
+
+Set configuration properties. This option also creates the configuration file if it does not exist:
+
+```bash
+sc config --set ollama.baseUrl=http://localhost:11434 --set provider=ollama
+```
+
+Get a configuration property:
+
+```bash
+sc config --get ollama.baseUrl
+```
+
+Unset/remove a configuration properties:
+
+```bash
+sc config --unset ollama.baseUrl --unset provider
+```
+
+## `config init`
+
+This command initializes the configuration file for the CLI. It creates a default configuration file if it does not already exist.
+
+### Usage <a name="config-init-usage"></a>
+
+```bash
+sc config init
+```
+
+
 ## `logs`
 
 This command allows you to view the logs of a service. This is especially useful with the `serve` command in detached mode, as it
 provides real-time updates on the service's status and any errors that may occur.
 
-### Options
+### Options <a name="logs-options"></a>
 
 * `-f, --follow`: Follow the logs in real-time. This option is useful for monitoring the service as it runs.
 
-### Parameters
+### Parameters <a name="logs-parameters"></a>
 
 * `SERVICE`: The name or ID of the service to view logs for.
 
-### Usage
+### Usage <a name="logs-usage"></a>
 
 ```bash
 sc logs --follow my-service
@@ -89,7 +157,7 @@ sc logs --follow my-service
 
 This command allows you to view the running services in the application. This is especially useful for monitoring the application's resource usage and performance.
 
-### Usage
+### Usage <a name="ps-usage"></a>
 
 ```bash
 sc ps
@@ -99,12 +167,12 @@ sc ps
 
 This command allows you to start a web service.
 
-### Options
+### Options <a name="serve-options"></a>
 * `-d, --detach`: Run a service in the background and print service ID.
 * `-p, --port`: Specify the port for the application. The default is 8080.
 * `--name`: Assign a name to the service.
 
-### Usage
+### Usage <a name="serve-usage"></a>
 
 ```bash
 sc serve --detach --port 8080 --name my-service
@@ -114,15 +182,21 @@ sc serve --detach --port 8080 --name my-service
 
 This command allows you to stop a running service.
 
-### Parameters
+### Parameters <a name="stop-parameters"></a>
 
 * `SERVICE`: The name or ID of the service to stop.
 
-### Usage
+### Usage <a name="stop-usage"></a>
 
 ```bash
 sc stop my-service
 ```
+
+## Global Options
+
+* `-h, --help`: Show help message and exit.
+* `-v, --version`: Show the version of the CLI.
+* `--context`: Specify the context to use.
 
 # FAQ
 

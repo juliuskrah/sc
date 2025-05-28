@@ -4,6 +4,7 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionPropert
 import org.springframework.stereotype.Component;
 
 import org.simplecommerce.ai.commerce.chat.ChatCommand;
+import org.simplecommerce.ai.commerce.config.ConfigCommand;
 import org.simplecommerce.ai.commerce.logs.LogsCommand;
 import org.simplecommerce.ai.commerce.ls.ListCommand;
 import org.simplecommerce.ai.commerce.serve.ServeCommand;
@@ -22,6 +23,7 @@ import picocli.CommandLine.Spec;
     versionProvider = ChatbotVersionProvider.class,
     subcommands = {
         ChatCommand.class,
+        ConfigCommand.class,
         CommandLine.HelpCommand.class,
         LogsCommand.class,
         ListCommand.class,

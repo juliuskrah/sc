@@ -1,10 +1,12 @@
 spring:
   config:
-    import:
-    - "optional:file:${user.dir}/.sc/config[.yaml]"
+    import: optional:${sc.config.dir}/config[.yaml]
   ai:
     model:
       chat: ollama
     ollama:
       init:
         pull-model-strategy: never
+sc:
+  config:
+    dir: ${SC_CONFIG_DIR:file:${user.dir}/.sc}
