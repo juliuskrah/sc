@@ -1,6 +1,6 @@
 # Introduction
 
-Simple Commerce is a cli application that makes it easy to interact with the Ollama API and other LLMs.
+`ai` is a cli application that makes it easy to interact with LLMs from various providers, including Ollama and OpenAI.
 
 <details>
 <summary><strong>Table of Contents</strong></summary>
@@ -21,6 +21,10 @@ Simple Commerce is a cli application that makes it easy to interact with the Oll
     - [Usage](#logs-usage)
   - [ps](#ps)
     - [Usage](#ps-usage)
+  - [rag](#rag)
+    - [Options](#rag-options)
+    - [Parameters](#rag-parameters)
+    - [Usage](#rag-usage)
   - [serve](#serve)
     - [Options](#serve-options)
     - [Usage](#serve-usage)
@@ -49,8 +53,6 @@ This command allows you to chat with the Ollama API and other LLMs. You can use 
     - `file:///path/to/file` - Local file
     - `https://<url>` - Remote file. Only https is supported.
     - `s3://<bucket>/<key>` - S3 file
-    - `gcs://<bucket>/<path>` - GCS file
-    - `azure://<container>/<path>` - Azure file
 - Tools
 - Attachments
 
@@ -82,12 +84,29 @@ sc chat --model llama3.2 --base-url http://localhost:11434 --temperature 0.3 "He
 
 This command allows you to view or set the configuration for the CLI. You can use it to manage settings such as the Ollama API endpoint and other CLI-specific configurations.
 
+The configuration reference contains the following keys:
+
+```yaml
+# ~/.sc/config
+provider: ollama # or openai
+providers:
+  ollama: # Ollama provider configuration
+    base-url: http://localhost:11433
+    model: qwen2:0.5b
+  openai: # OpenAI provider configuration
+    base-url: https://api.openai.com/v1
+    model: gpt-3.5-turbo
+    options: {} # provider-specific options
+```
+
+By default, the configuration file is stored in `$HOME/.sc/config`. You can change the configuration directory by setting the `SC_CONFIG_DIR` environment variable.
+
 ### Options <a name="config-options"></a>
 
 * `--dir`: Show the configuration directory. This option will display the path to the directory where the configuration
   files are stored. The default directory is `$HOME/.sc/` however this can be overridden by setting the `SC_CONFIG_DIR` environment variable.
 * `--file`: Show the configuration file. This option will display the path to the configuration file used by the CLI.
-* `--set`: Set a configuration setting. You need to provide the key and value in the format `key=value`.
+* `--set`: Set a configuration setting. You need to provide the key and value in the format `key=value`. Invalid keys will be ignored. This option also creates the configuration file if it does not exist. The configuration file is stored in the directory specified by `--dir` or the default directory if not specified. The default configuration file is `$HOME/.sc/config`.
 * `--get`: Get the value of a specific configuration setting. You need to provide the key.
 * `--unset`: Unset a configuration setting. You need to provide the key.
 
@@ -108,13 +127,13 @@ sc config --file
 Set configuration properties. This option also creates the configuration file if it does not exist:
 
 ```bash
-sc config --set ollama.baseUrl=http://localhost:11434 --set provider=ollama
+sc config --set providers.ollama.base-url=http://localhost:11434 --set provider=ollama
 ```
 
 Get a configuration property:
 
 ```bash
-sc config --get ollama.baseUrl
+sc config --get providers.ollama.base-url
 ```
 
 Unset/remove a configuration properties:
@@ -125,14 +144,16 @@ sc config --unset ollama.baseUrl --unset provider
 
 ## `config init`
 
-This command initializes the configuration file for the CLI. It creates a default configuration file if it does not already exist.
+This command initializes the configuration file for the CLI. It creates a default configuration file if it does not already exist. This is useful for setting up the CLI for the first time or resetting the configuration. When you run this command, it will create a configuration file in the default directory (`$HOME/.sc/config`) with the default settings.
+
+> [!NOTE]
+> If the configuration file already exists, this command will not overwrite it. It will only create the file if it does not exist. You can override the default configuration directory by setting the `SC_CONFIG_DIR` environment variable.
 
 ### Usage <a name="config-init-usage"></a>
 
 ```bash
 sc config init
 ```
-
 
 ## `logs`
 
@@ -161,6 +182,31 @@ This command allows you to view the running services in the application. This is
 
 ```bash
 sc ps
+```
+
+## `rag`
+
+This command allows you to interact with the RAG (Retrieval-Augmented Generation) system. It provides options to manage documents and attachments.
+
+### Options <a name="rag-options"></a>
+
+* `-o, --output`: Specify output filename for the RAG response. This option must be used with the `--etl=file` option.
+* `--etl`: Specify the ETL (Extract, Transform, Load) operation target. The available targets are:
+  - `file`: Write output to a file from the local filesystem (default).
+  - `vectorStore`: Write output to a vector store.
+
+### Parameters <a name="rag-parameters"></a>
+
+* `DOCUMENT`: The document to process. This can be a local file, a remote file (HTTPS), or a cloud storage file (S3, GCS, Azure).
+  The following protocols are supported:
+  - `file:///path/to/file`: Local file
+  - `https://<url>`: Remote file (only HTTPS is supported)
+  - `s3://<bucket>/<key>`: S3 file (Planned for future support)
+
+### Usage <a name="rag-usage"></a>
+
+```bash
+sc rag --etl=file --output output.txt file:///path/to/document.pdf
 ```
 
 ## `serve`
@@ -223,7 +269,7 @@ To create the image, run the following goal:
 Then, you can run the app like any other container:
 
 ```bash
-docker run --rm commerce-projects:sc:0.0.1-SNAPSHOT
+docker run --rm commerce-projects/sc:0.0.1-SNAPSHOT
 ```
 
 ## Executable with Native Build Tools

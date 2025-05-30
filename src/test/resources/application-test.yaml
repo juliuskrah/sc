@@ -10,3 +10,7 @@ spring:
 sc:
   config:
     dir: ${SC_CONFIG_DIR:file:${user.dir}/.sc}
+logging:
+  level:
+    root: info
+    "[org.simplecommerce.ai]": debug

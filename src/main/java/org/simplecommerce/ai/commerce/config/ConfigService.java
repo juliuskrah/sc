@@ -37,7 +37,7 @@ public class ConfigService {
             if (Files.exists(configFile) && Files.isRegularFile(configFile)) {
                 return configFile.toAbsolutePath().toString();
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             logger.warn("[{}] is not a valid file", configFile, ex);
         }
         return null;

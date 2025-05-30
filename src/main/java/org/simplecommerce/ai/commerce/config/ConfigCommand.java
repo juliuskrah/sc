@@ -1,6 +1,5 @@
 package org.simplecommerce.ai.commerce.config;
 
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +48,7 @@ public class ConfigCommand implements Runnable {
                 Configuration directory does not exist, you can use any of the following options to create it:
 
                     @|bold sc config init|@                  Initialize the configuration file
-                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set a configuration key-value pair
+                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
                 """));
             }
         }
@@ -62,7 +61,7 @@ public class ConfigCommand implements Runnable {
                 Configuration file does not exist, you can use any of the following options to create a config file:
 
                     @|bold sc config init|@                  Initialize the configuration file
-                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set a configuration key-value pair
+                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
                 """));
             }
         }
@@ -70,7 +69,7 @@ public class ConfigCommand implements Runnable {
 
     @Command(name = "init", description = "Initialize the configuration file", mixinStandardHelpOptions = true, versionProvider = ChatbotVersionProvider.class, subcommands = CommandLine.HelpCommand.class)
     public void init() {
-        // This method can be used to initialize the configuration file if needed
+        // TODO: Implement the logic to initialize the configuration file
         spec.commandLine().getOut().println("Configuration file initialized.");
     }
 

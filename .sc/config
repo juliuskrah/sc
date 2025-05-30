@@ -1,4 +1,9 @@
 provider: ollama
-ollama:
-  base-url: http://localhost:11433
-  
+providers:
+  ollama:
+    base-url: http://localhost:11433
+    model: mistral-small3.1
+  openai:
+    base-url: https://api.openai.com/v1
+    model: gpt-3.5-turbo
+    options: {} # provider-specific options

@@ -1,14 +1,14 @@
 package org.simplecommerce.ai.commerce.command;
 
-import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionProperties;
-import org.springframework.stereotype.Component;
-
 import org.simplecommerce.ai.commerce.chat.ChatCommand;
 import org.simplecommerce.ai.commerce.config.ConfigCommand;
 import org.simplecommerce.ai.commerce.logs.LogsCommand;
 import org.simplecommerce.ai.commerce.ls.ListCommand;
+import org.simplecommerce.ai.commerce.rag.RagCommand;
 import org.simplecommerce.ai.commerce.serve.ServeCommand;
 import org.simplecommerce.ai.commerce.stop.StopCommand;
+import org.springframework.ai.model.ollama.autoconfigure.OllamaConnectionProperties;
+import org.springframework.stereotype.Component;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -27,6 +27,7 @@ import picocli.CommandLine.Spec;
         CommandLine.HelpCommand.class,
         LogsCommand.class,
         ListCommand.class,
+        RagCommand.class,
         ServeCommand.class,
         StopCommand.class,
     }
@@ -45,7 +46,7 @@ public class TopCommand implements Runnable {
     @Override
     public void run() {
         // If no subcommand is provided, print the help message
-        spec.commandLine().usage(System.out);
+        spec.commandLine().usage(spec.commandLine().getOut());
     }
 
     public String getEndpoint() {
