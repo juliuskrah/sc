@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.6'
+	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.graalvm.buildtools.native' version '0.10.6'
 }
@@ -20,7 +20,7 @@ repositories {
 }
 
 ext {
-	set('springAiVersion', "1.0.0-M8")
+	set('springAiVersion', "1.0.0")
     set('scVersion', project.version)
     set('picocliVersion', "4.7.7")
     set('jlineVersion', "3.30.0")
@@ -33,6 +33,8 @@ dependencies {
     implementation('org.springframework.ai:spring-ai-starter-model-ollama') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
     }
+	implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
+	implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
 	implementation "org.jline:jline:${jlineVersion}"
 	implementation "org.jline:jline-terminal-ffm:${jlineVersion}"
 	implementation "org.jline:jline-terminal-jni:${jlineVersion}"
@@ -41,7 +43,7 @@ dependencies {
 	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
-	testImplementation "org.testcontainers:ollama:1.21.0"
+	testImplementation 'org.testcontainers:ollama:1.21.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
