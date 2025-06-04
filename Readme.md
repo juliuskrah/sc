@@ -251,7 +251,7 @@ sc stop my-service
 You can enable logging with the following environment variable:
 
 ```bash
-export JAVA_TOOL_OPTIONS=-Dlogging.level.org.simplecommerce.ai.commerce=debug
+JAVA_TOOL_OPTIONS=-Dlogging.level.org.simplecommerce.ai.commerce=debug sc <args>
 ```
 
 # Development

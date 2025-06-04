@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.jline.reader.LineReader;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
@@ -63,6 +64,7 @@ public class ChatCommand implements Runnable {
 
     @Override
     public void run() {
+        var conversationId = UUID.randomUUID().toString();
         if (message == null) {
             try {
                 message = fromStdIn();
@@ -79,7 +81,7 @@ public class ChatCommand implements Runnable {
                 if ("exit".equals(line) || "quit".equals(line)) {
                     break;
                 }
-                var streamingResponse = chatService.sendAndStreamMessage(line, model);
+                var streamingResponse = chatService.sendAndStreamMessage(line, model, conversationId);
                 streamingResponse.toStream().forEach(chunk -> {
                     reader.getTerminal().writer().print(Ansi.AUTO.string(chunk));
                     reader.getTerminal().flush();
@@ -88,7 +90,7 @@ public class ChatCommand implements Runnable {
                 reader.getTerminal().flush();
             }
         } else {
-            var streamingResponse = chatService.sendAndStreamMessage(message, model);
+            var streamingResponse = chatService.sendAndStreamMessage(message, model, conversationId);
             streamingResponse.toStream().forEach(chunk -> {
                 spec.commandLine().getOut().print(Ansi.AUTO.string(chunk));
                 spec.commandLine().getOut().flush();

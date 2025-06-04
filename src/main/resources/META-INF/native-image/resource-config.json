@@ -1,0 +1,39 @@
+{
+  "resources": [
+    {
+      "pattern": "org/hsqldb/resources/sql-state-messages.*"
+    },
+    {
+      "pattern": "org/hsqldb/resources/information-schema.sql"
+    },
+    {
+      "pattern": "org/hsqldb/resources/webserver.properties"
+    },
+    {
+      "pattern": "org/hsqldb/util/sqltool.properties"
+    },
+    {
+      "pattern": "org/hsqldb/dbinfo/sysdba.properties"
+    },
+    {
+      "pattern": ".*\\.sql$"
+    },
+    {
+      "pattern": "org/hsqldb/.*"
+    },
+    {
+      "pattern": "application.properties"
+    },
+    {
+      "pattern": "application.yml"
+    }
+  ],
+  "bundles": [
+    {
+      "name": "org.hsqldb.resources.sql-state-messages"
+    },
+    {
+      "name": "org.hsqldb.resources.information-schema"
+    }
+  ]
+}

@@ -76,6 +76,7 @@ graalvmNative {
         main {
             imageName = 'sc'
             buildArgs.add('--verbose')
+            buildArgs.add('--enable-native-access=ALL-UNNAMED')
         }
     }
     metadataRepository {
