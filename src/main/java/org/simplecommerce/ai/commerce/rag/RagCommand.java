@@ -31,7 +31,7 @@ public class RagCommand implements Runnable {
     @Option(names = { "-o", "--output" }, description = "Output filename for the RAG response. Must be used with '--etl=file'")
     private Path outputFile;
 
-    @Option(names = "--etl", description = "ETL operation target: @|bold,italic file|@ or @|bold,italic vectorStore|@. Default: ${DEFAULT-VALUE}", defaultValue = "file")
+    @Option(names = "--etl", description = "ETL operation target: @|bold,italic file|@ or @|bold,italic vectorStore|@ Valid values: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}", defaultValue = "file")
     private EtlTarget etlTarget;
 
     @Parameters(paramLabel = "DOCUMENT", arity = "1", description = """
@@ -49,7 +49,7 @@ public class RagCommand implements Runnable {
     public void run() {
         validateParameters();
         try {
-            if (etlTarget == EtlTarget.file) {
+            if (etlTarget == EtlTarget.FILE) {
                 processFileTarget();
             } else {
                 processVectorStoreTarget();
@@ -61,11 +61,11 @@ public class RagCommand implements Runnable {
     }
 
     private void validateParameters() {
-        if (outputFile != null && etlTarget != EtlTarget.file) {
+        if (outputFile != null && etlTarget != EtlTarget.FILE) {
             throw new CommandLine.ParameterException(spec.commandLine(),
                     "The --output option can only be used with '--etl=file'");
         }
-        if (outputFile == null && etlTarget == EtlTarget.file) {
+        if (outputFile == null && etlTarget == EtlTarget.FILE) {
             throw new CommandLine.ParameterException(spec.commandLine(),
                     "The --output option is required when using '--etl=file'");
         }
@@ -82,7 +82,18 @@ public class RagCommand implements Runnable {
     }
 
     enum EtlTarget {
-        file,
-        vectorStore
+        FILE("file"),
+        VECTOR_STORE("vectorStore");
+
+        private final String name;
+
+        EtlTarget(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

@@ -15,22 +15,10 @@
     - [Usage](#config-usage)
   - [config init](#config-init)
     - [Usage](#config-init-usage)
-  - [logs](#logs)
-    - [Options](#logs-options)
-    - [Parameters](#logs-parameters)
-    - [Usage](#logs-usage)
-  - [ps](#ps)
-    - [Usage](#ps-usage)
   - [rag](#rag)
     - [Options](#rag-options)
     - [Parameters](#rag-parameters)
     - [Usage](#rag-usage)
-  - [serve](#serve)
-    - [Options](#serve-options)
-    - [Usage](#serve-usage)
-  - [stop](#stop)
-    - [Parameters](#stop-parameters)
-    - [Usage](#stop-usage)
   - [Global Options](#global-options)
 - [FAQ](#faq)
 - [Development](#development)
@@ -155,35 +143,6 @@ This command initializes the configuration file for the CLI. It creates a defaul
 sc config init
 ```
 
-## `logs`
-
-This command allows you to view the logs of a service. This is especially useful with the `serve` command in detached mode, as it
-provides real-time updates on the service's status and any errors that may occur.
-
-### Options <a name="logs-options"></a>
-
-* `-f, --follow`: Follow the logs in real-time. This option is useful for monitoring the service as it runs.
-
-### Parameters <a name="logs-parameters"></a>
-
-* `SERVICE`: The name or ID of the service to view logs for.
-
-### Usage <a name="logs-usage"></a>
-
-```bash
-sc logs --follow my-service
-```
-
-## `ps`
-
-This command allows you to view the running services in the application. This is especially useful for monitoring the application's resource usage and performance.
-
-### Usage <a name="ps-usage"></a>
-
-```bash
-sc ps
-```
-
 ## `rag`
 
 This command allows you to interact with the RAG (Retrieval-Augmented Generation) system. It provides options to manage documents and attachments.
@@ -207,35 +166,6 @@ This command allows you to interact with the RAG (Retrieval-Augmented Generation
 
 ```bash
 sc rag --etl=file --output output.txt file:///path/to/document.pdf
-```
-
-## `serve`
-
-This command allows you to start a web service.
-
-### Options <a name="serve-options"></a>
-* `-d, --detach`: Run a service in the background and print service ID.
-* `-p, --port`: Specify the port for the application. The default is 8080.
-* `--name`: Assign a name to the service.
-
-### Usage <a name="serve-usage"></a>
-
-```bash
-sc serve --detach --port 8080 --name my-service
-```
-
-## `stop`
-
-This command allows you to stop a running service.
-
-### Parameters <a name="stop-parameters"></a>
-
-* `SERVICE`: The name or ID of the service to stop.
-
-### Usage <a name="stop-usage"></a>
-
-```bash
-sc stop my-service
 ```
 
 ## Global Options

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.springframework.ai.document.DocumentReader;
 import org.springframework.ai.document.DocumentTransformer;
 import org.springframework.ai.document.DocumentWriter;
+import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.reader.JsonReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.writer.FileDocumentWriter;
@@ -65,7 +66,7 @@ public class RagService {
         // can be one of: JSON, TXT, MD, HTML, PDF etc.
         documentReader = new JsonReader(resource);
         documentTransformer = new TokenTextSplitter(true);
-        documentWriter = new FileDocumentWriter(outputFile.toString());
+        documentWriter = new FileDocumentWriter(outputFile.toString(), true, MetadataMode.ALL, false);
         etl();
         if (!Files.exists(outputFile)) {
             throw new IOException("File not found: " + outputFile);
