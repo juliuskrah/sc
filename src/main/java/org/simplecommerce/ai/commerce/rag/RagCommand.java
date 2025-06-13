@@ -31,7 +31,7 @@ public class RagCommand implements Runnable {
     @Option(names = { "-o", "--output" }, description = "Output filename for the RAG response. Must be used with '--etl=file'")
     private Path outputFile;
 
-    @Option(names = "--etl", description = "ETL operation target: @|bold,italic file|@ or @|bold,italic vectorStore|@ Valid values: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}", defaultValue = "file")
+    @Option(names = "--etl", description = "ETL operation target: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}", defaultValue = "file")
     private EtlTarget etlTarget;
 
     @Parameters(paramLabel = "DOCUMENT", arity = "1", description = """
