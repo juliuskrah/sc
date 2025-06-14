@@ -28,13 +28,13 @@ ext {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation('org.springframework.ai:spring-ai-starter-model-ollama') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
     }
 	implementation 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
 	implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+	implementation 'org.springframework.ai:spring-ai-markdown-document-reader'
+	implementation 'org.springframework.ai:spring-ai-jsoup-document-reader'
 	implementation "org.jline:jline:${jlineVersion}"
 	implementation "org.jline:jline-terminal-ffm:${jlineVersion}"
 	implementation "org.jline:jline-terminal-jni:${jlineVersion}"

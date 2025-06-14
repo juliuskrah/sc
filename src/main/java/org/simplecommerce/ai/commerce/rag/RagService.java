@@ -11,8 +11,14 @@ import org.springframework.ai.document.DocumentTransformer;
 import org.springframework.ai.document.DocumentWriter;
 import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.reader.JsonReader;
+import org.springframework.ai.reader.TextReader;
+import org.springframework.ai.reader.jsoup.JsoupDocumentReader;
+import org.springframework.ai.reader.markdown.MarkdownDocumentReader;
+import org.springframework.ai.reader.markdown.config.MarkdownDocumentReaderConfig;
+import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.writer.FileDocumentWriter;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
@@ -62,9 +68,7 @@ public class RagService {
 
     private Path processLocalFile(String location, Path outputFile) throws IOException {
         var resource = resourceLoader.getResource(location);
-        // Determine file type based on resource content
-        // can be one of: JSON, TXT, MD, HTML, PDF etc.
-        documentReader = new JsonReader(resource);
+        documentReader = determineReader(resource);
         documentTransformer = new TokenTextSplitter(true);
         documentWriter = new FileDocumentWriter(outputFile.toString(), true, MetadataMode.ALL, false);
         etl();
@@ -72,6 +76,45 @@ public class RagService {
             throw new IOException("File not found: " + outputFile);
         }
         return outputFile;
+    }
+
+    DocumentReader determineReader(Resource resource) {
+        String filename = resource.getFilename();
+        if (filename == null) {
+            logger.warn("Resource filename is null, defaulting to TextReader");
+            return new TextReader(resource);
+        }
+        
+        String extension = getFileExtension(filename.toLowerCase());
+        
+        return switch (extension) {
+            case "json" -> {
+                logger.debug("Using JsonReader for file: {}", filename);
+                yield new JsonReader(resource);
+            }
+            case "pdf" -> {
+                logger.debug("Using PagePdfDocumentReader for file: {}", filename);
+                yield new PagePdfDocumentReader(resource);
+            }
+            case "md", "markdown" -> {
+                logger.debug("Using MarkdownDocumentReader for file: {}", filename);
+                yield new MarkdownDocumentReader(resource, MarkdownDocumentReaderConfig.defaultConfig());
+            }
+            case "html", "htm" -> {
+                logger.debug("Using JsoupDocumentReader for file: {}", filename);
+                yield new JsoupDocumentReader(resource);
+            }
+            default -> {
+                // Default to TextReader for .txt files and any other text-based files
+                logger.debug("Using TextReader for file: {} (default for unrecognized extension)", filename);
+                yield new TextReader(resource);
+            }
+        };
+    }
+
+    private String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        return lastDotIndex == -1 ? "" : filename.substring(lastDotIndex + 1);
     }
 
     private void etl() {

@@ -28,10 +28,10 @@ public class RagCommand implements Runnable {
     @Spec
     private CommandLine.Model.CommandSpec spec;
 
-    @Option(names = { "-o", "--output" }, description = "Output filename for the RAG response. Must be used with '--etl=file'")
+    @Option(names = { "-o", "--output" }, paramLabel = "OUTPUT_FILE", description = "Output filename for the RAG response. Must be used with '--etl=file'")
     private Path outputFile;
 
-    @Option(names = "--etl", description = "ETL operation target: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}", defaultValue = "file")
+    @Option(names = "--etl", paramLabel = "TARGET", description = "ETL operation target: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}", defaultValue = "file")
     private EtlTarget etlTarget;
 
     @Parameters(paramLabel = "DOCUMENT", arity = "1", description = """
