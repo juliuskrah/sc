@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
-import org.simplecommerce.ai.commerce.command.OllamaMixin;
+import org.simplecommerce.ai.commerce.command.ProviderMixin;
 import org.springframework.stereotype.Component;
 
 import picocli.CommandLine;
@@ -25,7 +25,7 @@ public class ConfigCommand implements Runnable {
     @Spec
     private CommandLine.Model.CommandSpec spec;
     @Mixin
-    private OllamaMixin ollamaMixin;
+    private ProviderMixin ollamaMixin;
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     private Options options;
 
@@ -65,11 +65,22 @@ public class ConfigCommand implements Runnable {
                 """));
             }
         }
+        if (options.get != null) {
+            spec.commandLine().getOut().println(configService.get(options.get));
+        }
+        if (options.set != null) {
+            configService.set(options.set);
+            spec.commandLine().getOut().println(options.set);
+        }
+        if (options.unset != null) {
+            configService.unset(options.unset);
+            spec.commandLine().getOut().println(options.unset);
+        }
     }
 
     @Command(name = "init", description = "Initialize the configuration file", mixinStandardHelpOptions = true, versionProvider = ChatbotVersionProvider.class, subcommands = CommandLine.HelpCommand.class)
     public void init() {
-        // TODO: Implement the logic to initialize the configuration file
+        configService.init();
         spec.commandLine().getOut().println("Configuration file initialized.");
     }
 

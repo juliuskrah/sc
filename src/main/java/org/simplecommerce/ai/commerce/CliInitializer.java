@@ -4,7 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
-import org.simplecommerce.ai.commerce.command.OllamaMixin;
+import org.simplecommerce.ai.commerce.command.ProviderMixin;
 import org.simplecommerce.ai.commerce.command.TopCommand;
 
 import picocli.CommandLine;
@@ -29,7 +29,7 @@ public class CliInitializer implements CommandLineRunner, ExitCodeGenerator {
     public void run(String... args) throws Exception {
         var commandsFactory = new PicocliCommands.PicocliCommandsFactory(factory);
         var cmd = new CommandLine(command, commandsFactory);
-        exitCode = cmd.setExecutionStrategy(OllamaMixin::executionStrategy).execute(args);
+        exitCode = cmd.setExecutionStrategy(ProviderMixin::executionStrategy).execute(args);
     }
 
     @Override

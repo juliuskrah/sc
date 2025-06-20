@@ -28,7 +28,7 @@ public class TopCommand implements Runnable {
     @Spec
     CommandLine.Model.CommandSpec spec;
     @Mixin
-    OllamaMixin ollamaMixin;
+    ProviderMixin ollamaMixin;
     private final OllamaConnectionProperties ollamaConnectionProperties;
 
     public TopCommand(OllamaConnectionProperties ollamaConnectionProperties) {

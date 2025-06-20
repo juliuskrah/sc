@@ -55,7 +55,9 @@ public class RagCommand implements Runnable {
                 processVectorStoreTarget();
             }
         } catch (IOException e) {
-            logger.error("Error processing document: {}", e.getMessage(), e);
+            if(logger.isErrorEnabled()) {
+                logger.error("Error processing document: {}", e.getMessage(), e);
+            }
             throw new CommandLine.ExecutionException(spec.commandLine(), "Failed to process document: " + e.getMessage());
         }
     }

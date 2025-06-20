@@ -11,7 +11,7 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 
 import org.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
-import org.simplecommerce.ai.commerce.command.OllamaMixin;
+import org.simplecommerce.ai.commerce.command.ProviderMixin;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;
@@ -36,7 +36,7 @@ public class ChatCommand implements Runnable {
             "--model" }, paramLabel = "MODEL", description = "Specify LLM to use")
     private String model;
     @Mixin
-    private OllamaMixin ollamaMixin;
+    private ProviderMixin ollamaMixin;
     @Spec
     private CommandLine.Model.CommandSpec spec;
 

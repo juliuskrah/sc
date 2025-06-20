@@ -14,14 +14,14 @@ import picocli.CommandLine.Spec;
 /**
  * @author Julius Krah
  */
-public class OllamaMixin {
+public class ProviderMixin {
     @Spec(Target.MIXEE)
     private CommandSpec mixee;
     @SuppressWarnings("unused")
     private String baseUrl;
-    private static final Logger logger = LoggerFactory.getLogger(OllamaMixin.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProviderMixin.class);
     
-    private static OllamaMixin topLevelOllamaMixin(CommandSpec commandSpec) {
+    private static ProviderMixin topLevelOllamaMixin(CommandSpec commandSpec) {
         return ((TopCommand) commandSpec.root().userObject()).ollamaMixin;
     }
 
