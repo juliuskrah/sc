@@ -258,23 +258,12 @@ class RagServiceTest {
 
     @Test
     void processToFile_shouldHandleTextFile(@TempDir Path tempDir) throws IOException {
-        // Create a test text file
-        Path inputFile = tempDir.resolve("test.txt");
-        Files.writeString(inputFile, """
-                Product Information:
-                
-                Brand: Specialized
-                Model: Stumpjumper
-                Type: Mountain Bike
-                Description: All-mountain bike with excellent suspension.
-                """);
         Path outputPath = tempDir.resolve("output.txt");
-
-        ragService.processToFile("file://" + inputFile.toString(), outputPath);
+        ragService.processToFile("classpath:mars.txt", outputPath);
 
         assertThat(outputPath).content()
-                .contains("Specialized")
-                .contains("Stumpjumper");
+                .contains("This paper provides a comprehensive examination of Mars")
+                .contains("Mars has long fascinated humanity, both scientifically and culturally");
     }
 
     @Test

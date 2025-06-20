@@ -1,0 +1,100 @@
+{
+    "$id": "https://juliuskrah.com/schemas/aictl-config-schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "AI Config Schema",
+    "type": "object",
+    "properties": {
+        "provider": {
+            "type": "string",
+            "enum": [
+                "ollama",
+                "openai"
+            ],
+            "description": "The ID of the provider."
+        },
+        "providers": {
+            "type": "object",
+            "description": "Provider specific configuration.",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "base-url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The base URL of the provider."
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The model to use."
+                    }
+                },
+                "required": [
+                    "base-url",
+                    "model"
+                ],
+                "additionalProperties": true
+            }
+        },
+        "chat-memory": {
+            "type": "object",
+            "description": "Memory configuration for the provider.",
+            "oneOf": [
+                {
+                    "properties": {
+                        "jdbc": {
+                            "type": "object",
+                            "description": "JDBC configuration for chat memory.",
+                            "properties": {
+                                "url": {
+                                    "type": "string",
+                                    "description": "JDBC URL for chat memory.",
+                                    "format": "uri"
+                                },
+                                "username": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "description": "Username for the JDBC connection."
+                                }
+                            },
+                            "required": [
+                                "url"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                {
+                    "properties": {
+                        "cassandra": {
+                            "type": "object",
+                            "description": "Cassandra configuration for chat memory.",
+                            "properties": {
+                                "contact-points": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "format": "uri"
+                                    }
+                                },
+                                "keyspace": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "contact-points",
+                                "keyspace"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "required": [
+        "provider"
+    ],
+    "additionalProperties": false
+}
