@@ -69,8 +69,12 @@ public class ConfigCommand implements Runnable {
             spec.commandLine().getOut().println(configService.get(options.get));
         }
         if (options.set != null) {
-            configService.set(options.set);
-            spec.commandLine().getOut().println(options.set);
+            try {
+                configService.set(options.set);
+                spec.commandLine().getOut().println(options.set);
+            } catch (IllegalStateException | IllegalArgumentException ex) {
+                spec.commandLine().getErr().println("Failed to set configuration: " + ex.getMessage());
+            }
         }
         if (options.unset != null) {
             configService.unset(options.unset);

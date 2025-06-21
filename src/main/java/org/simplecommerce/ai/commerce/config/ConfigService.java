@@ -21,8 +21,10 @@ import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.TypeDescription;
 
@@ -318,6 +320,7 @@ public class ConfigService {
      *
      * @param values The map of configuration values to set
      * @throws IllegalStateException    if the configuration file cannot be saved
+     * @throws IllegalArgumentException if the configuration key is invalid
      */
     public void set(Map<String, String> values) {
         Map<String, Object> currentMap = loadYamlAsMap();
@@ -329,8 +332,8 @@ public class ConfigService {
         // Convert back to nested structure and save
         Map<String, Object> updatedMap = unflattenMap(flattenedMap);
         saveToYaml(updatedMap);
-        Config config = loadYamlAsBean();
         try {
+            Config config = loadYamlAsBean();
             if (config != null && config.chatMemory() != null) {
                 config.chatMemory().resolve(); // Validate the chat memory configuration
             }
@@ -341,6 +344,13 @@ public class ConfigService {
             // Rollback the changes if an error occurs
             unset(values.keySet().stream().toList());
             throw ex;
+        } catch (ConstructorException ex) {
+            if(logger.isErrorEnabled()) {
+                logger.error("Failed to update configuration", ex);
+            }
+            // Rollback the changes if an error occurs
+            unset(values.keySet().stream().toList());
+            throw ex.getCause() instanceof IllegalArgumentException ia ? ia : new RuntimeException(ex);
         }
     }
 

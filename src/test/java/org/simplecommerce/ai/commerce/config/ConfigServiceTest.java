@@ -1,6 +1,7 @@
 package org.simplecommerce.ai.commerce.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.io.IOException;
@@ -137,20 +138,20 @@ class ConfigServiceTest {
             // Create a test markdown file
             Path config = configDir.resolve("config");
             Files.writeString(config, """
-                provider: ollama
-                providers:
-                    ollama:
-                        base-url: http://localhost:11433
-                        model: mistral-small3.1
-                    openai:
-                        base-url: https://api.openai.com/v1
-                        model: gpt-3.5-turbo
-                        options: { } # provider-specific options
-                chat-memory:
-                    jdbc:
-                        url: jdbc:hsqldb:mem:testdb
-                        username: sa
-                """);
+                    provider: ollama
+                    providers:
+                        ollama:
+                            base-url: http://localhost:11433
+                            model: mistral-small3.1
+                        openai:
+                            base-url: https://api.openai.com/v1
+                            model: gpt-3.5-turbo
+                            options: { } # provider-specific options
+                    chat-memory:
+                        jdbc:
+                            url: jdbc:hsqldb:mem:testdb
+                            username: sa
+                    """);
             String provider = service.get("provider");
             assertThat(provider).isEqualTo("ollama");
 
@@ -175,26 +176,30 @@ class ConfigServiceTest {
             // Create a test markdown file
             Path config = configDir.resolve("config");
             Files.writeString(config, """
-                provider: ollama
-                providers:
-                    ollama:
-                        base-url: http://localhost:11433
-                        model: mistral-small3.1
-                    openai:
-                        base-url: https://api.openai.com/v1
-                        model: gpt-3.5-turbo
-                        options: { } # provider-specific options
-                chat-memory:
-                    jdbc:
-                        url: jdbc:hsqldb:mem:testdb
-                        username: sa
-                """);
-                assertThatIllegalStateException()
+                    provider: ollama
+                    providers:
+                        ollama:
+                            base-url: http://localhost:11433
+                            model: mistral-small3.1
+                        openai:
+                            base-url: https://api.openai.com/v1
+                            model: gpt-3.5-turbo
+                            options: { } # provider-specific options
+                    chat-memory:
+                        jdbc:
+                            url: jdbc:hsqldb:mem:testdb
+                            username: sa
+                    """);
+            assertThatIllegalStateException()
                     .isThrownBy(() -> service.set(Map.of("chat-memory.cassandra.keyspace", "springboot")))
                     .withMessageContaining("Only one of 'jdbc' or 'cassandra' must be set.");
 
-                // Confirm the config contents remain unchanged (reformatted but not altered)
-                assertThat(config).content().isEqualTo("""
+            assertThatIllegalArgumentException()
+                    .isThrownBy(() -> service.set(Map.of("foo", "bar")))
+                    .withMessageContaining("Unknown key: foo");
+
+            // Confirm the config contents remain unchanged (reformatted but not altered)
+            assertThat(config).content().isEqualTo("""
                     provider: ollama
                     chat-memory:
                       jdbc:
@@ -213,115 +218,106 @@ class ConfigServiceTest {
         @Test
         void flattenMap_convertsNestedStructureToFlatKeys() {
             Map<String, Object> nestedMap = Map.of(
-                "provider", "ollama",
-                "providers", Map.of(
-                    "ollama", Map.of(
-                        "base-url", "http://localhost:11433",
-                        "model", "mistral-small3.1"
-                    ),
-                    "openai", Map.of(
-                        "base-url", "https://api.openai.com/v1",
-                        "model", "gpt-3.5-turbo",
-                        "options", Map.of()
-                    )
-                ),
-                "chat-memory", Map.of(
-                    "jdbc", Map.of(
-                        "url", "jdbc:hsqldb:mem:testdb",
-                        "username", "sa"
-                    )
-                )
-            );
-            
+                    "provider", "ollama",
+                    "providers", Map.of(
+                            "ollama", Map.of(
+                                    "base-url", "http://localhost:11433",
+                                    "model", "mistral-small3.1"),
+                            "openai", Map.of(
+                                    "base-url", "https://api.openai.com/v1",
+                                    "model", "gpt-3.5-turbo",
+                                    "options", Map.of())),
+                    "chat-memory", Map.of(
+                            "jdbc", Map.of(
+                                    "url", "jdbc:hsqldb:mem:testdb",
+                                    "username", "sa")));
+
             Map<String, String> flattened = service.flattenMap(nestedMap);
-            
+
             assertThat(flattened)
-                .containsEntry("provider", "ollama")
-                .containsEntry("providers.ollama.base-url", "http://localhost:11433")
-                .containsEntry("providers.ollama.model", "mistral-small3.1")
-                .containsEntry("providers.openai.base-url", "https://api.openai.com/v1")
-                .containsEntry("providers.openai.model", "gpt-3.5-turbo")
-                .containsEntry("chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb")
-                .containsEntry("chat-memory.jdbc.username", "sa");
+                    .containsEntry("provider", "ollama")
+                    .containsEntry("providers.ollama.base-url", "http://localhost:11433")
+                    .containsEntry("providers.ollama.model", "mistral-small3.1")
+                    .containsEntry("providers.openai.base-url", "https://api.openai.com/v1")
+                    .containsEntry("providers.openai.model", "gpt-3.5-turbo")
+                    .containsEntry("chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb")
+                    .containsEntry("chat-memory.jdbc.username", "sa");
         }
 
         @Test
         void unflattenMap_convertsFlatKeysToNestedStructure() {
             Map<String, String> flattenedMap = Map.of(
-                "provider", "ollama",
-                "providers.ollama.base-url", "http://localhost:11433",
-                "providers.ollama.model", "mistral-small3.1",
-                "chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb",
-                "chat-memory.jdbc.username", "sa"
-            );
-            
+                    "provider", "ollama",
+                    "providers.ollama.base-url", "http://localhost:11433",
+                    "providers.ollama.model", "mistral-small3.1",
+                    "chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb",
+                    "chat-memory.jdbc.username", "sa");
+
             Map<String, Object> nested = service.unflattenMap(flattenedMap);
-            
+
             assertThat(nested).containsEntry("provider", "ollama");
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Object> providers = (Map<String, Object>) nested.get("providers");
             assertThat(providers).isNotNull();
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Object> ollama = (Map<String, Object>) providers.get("ollama");
             assertThat(ollama).isNotNull()
-                .containsEntry("base-url", "http://localhost:11433")
-                .containsEntry("model", "mistral-small3.1");
-            
+                    .containsEntry("base-url", "http://localhost:11433")
+                    .containsEntry("model", "mistral-small3.1");
+
             @SuppressWarnings("unchecked")
             Map<String, Object> chatMemory = (Map<String, Object>) nested.get("chat-memory");
             assertThat(chatMemory).isNotNull();
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Object> jdbc = (Map<String, Object>) chatMemory.get("jdbc");
             assertThat(jdbc).isNotNull()
-                .containsEntry("url", "jdbc:hsqldb:mem:testdb")
-                .containsEntry("username", "sa");
+                    .containsEntry("url", "jdbc:hsqldb:mem:testdb")
+                    .containsEntry("username", "sa");
         }
 
         @Test
         void setAndUnset_withDottedKeyNotation() throws IOException {
             // Set initial values
             service.set(Map.of(
-                "provider", "ollama",
-                "providers.ollama.base-url", "http://localhost:11433",
-                "chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb"
-            ));
-            
+                    "provider", "ollama",
+                    "providers.ollama.base-url", "http://localhost:11433",
+                    "chat-memory.jdbc.url", "jdbc:hsqldb:mem:testdb"));
+
             // Verify the YAML structure is correctly created
             Path configFile = configDir.resolve("config");
             String content = Files.readString(configFile);
-            
+
             // Assert that nested structure is correctly created
             assertThat(content).contains("provider: ollama")
-                .contains("providers:")
-                .contains("  ollama:")
-                .contains("    base-url: http://localhost:11433")
-                .contains("chat-memory:")
-                .contains("  jdbc:")
-                .contains("    url: jdbc:hsqldb:mem:testdb");
-            
+                    .contains("providers:")
+                    .contains("  ollama:")
+                    .contains("    base-url: http://localhost:11433")
+                    .contains("chat-memory:")
+                    .contains("  jdbc:")
+                    .contains("    url: jdbc:hsqldb:mem:testdb");
+
             // Add more values
             service.set(Map.of(
-                "providers.ollama.model", "mistral-small3.1",
-                "chat-memory.jdbc.username", "sa"
-            ));
-            
+                    "providers.ollama.model", "mistral-small3.1",
+                    "chat-memory.jdbc.username", "sa"));
+
             // Verify values are added to existing structure
             content = Files.readString(configFile);
             assertThat(content).contains("    model: mistral-small3.1")
-                .contains("    username: sa");
-                
+                    .contains("    username: sa");
+
             // Unset a value
             service.unset(List.of("chat-memory.jdbc.username"));
-            
+
             // Verify the value is removed but structure remains
             content = Files.readString(configFile);
             assertThat(content).contains("chat-memory:")
-                .contains("  jdbc:")
-                .contains("    url: jdbc:hsqldb:mem:testdb")
-                .doesNotContain("    username: sa");
+                    .contains("  jdbc:")
+                    .contains("    url: jdbc:hsqldb:mem:testdb")
+                    .doesNotContain("    username: sa");
         }
     }
 
