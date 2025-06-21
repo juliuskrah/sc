@@ -72,7 +72,7 @@ sc chat --model llama3.2 --base-url http://localhost:11434 --temperature 0.3 "He
 
 This command allows you to view or set the configuration for the CLI. You can use it to manage settings such as the Ollama API endpoint and other CLI-specific configurations.
 
-The configuration reference contains the following keys:
+The configuration [schema](./.sc/schema.json) will look something like this:
 
 ```yaml
 # ~/.sc/config
@@ -85,6 +85,10 @@ providers:
     base-url: https://api.openai.com/v1
     model: gpt-3.5-turbo
     options: {} # provider-specific options
+chat-memory:
+  jdbc:
+    url: jdbc:hsqldb:mem:testdb
+    username: sa
 ```
 
 By default, the configuration file is stored in `$HOME/.sc/config`. You can change the configuration directory by setting the `SC_CONFIG_DIR` environment variable.
@@ -127,7 +131,7 @@ sc config --get providers.ollama.base-url
 Unset/remove a configuration properties:
 
 ```bash
-sc config --unset ollama.baseUrl --unset provider
+sc config --unset providers.ollama.base-url --unset provider
 ```
 
 ## `config init`
