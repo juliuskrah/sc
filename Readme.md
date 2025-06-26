@@ -1,6 +1,6 @@
 # Introduction
 
-`ai` is a cli application that makes it easy to interact with LLMs from various providers, including Ollama and OpenAI.
+`sc` is a cli application that makes it easy to interact with LLMs from multiple providers, including Ollama and OpenAI.
 
 <details>
 <summary><strong>Table of Contents</strong></summary>
@@ -22,9 +22,8 @@
   - [Global Options](#global-options)
 - [FAQ](#faq)
 - [Development](#development)
-  - [Lightweight Container with Cloud Native Buildpacks](#lightweight-container-with-cloud-native-buildpacks)
   - [Executable with Native Build Tools](#executable-with-native-build-tools)
-  - [Gradle Toolchain support](#gradle-toolchain-support)
+  - [Future Work](#future-work)
 
 </details>
 
@@ -34,27 +33,13 @@
 
 This command allows you to chat with the Ollama API and other LLMs. You can use it to send messages and receive responses from the model.
 
-`chat` context is implemented via:
-
-- RAG
-  - Documents are provided to the to the LLM through the following mechanisms:
-    - `file:///path/to/file` - Local file
-    - `https://<url>` - Remote file. Only https is supported.
-    - `s3://<bucket>/<key>` - S3 file
-- Tools
-- Attachments
-
-`chat` memory is supported via:
-
-- RDBMS
-- neo4j
-- Cassandra
+`chat` memory is implemented with HSQLDB, which is an in-memory database. You can find the database files in $HOME/.sc/store.db.*. See the [config](#config) command for more information on how to configure the chat memory.
 
 ### Options <a name="chat-options"></a>
 
-* `-m, --model`: Specify the model to use for the chat. <required>".
+* `-m, --model`: Specify the model to use for the chat. Currently only Ollama models are supported. The default is `mistral-small3.1`.
+  > NOTE: The model should be available locally in the Ollama environment. You can list available models using the `ollama list` command.
 * `--base-url`: Ollama API endpoint. The default is http://localhost:11434".
-* `-t, --temperature`: Specify the temperature for the model. The default is 0.3.
 
 ### Parameters <a name="chat-parameters"></a>
 
@@ -63,10 +48,16 @@ This command allows you to chat with the Ollama API and other LLMs. You can use 
 ### Usage <a name="chat-usage"></a>
 
 ```bash
-sc chat --model llama3.2 --base-url http://localhost:11434 --temperature 0.3 "Hello, how are you?"
+sc chat --model llama3.2 --base-url=http://localhost:11434 "Hello, how are you?"
 ```
 
-> Note: To use the `chat` command in interactive mode, you can omit the `MESSAGE` parameter. The command will then prompt you for input.
+> Note: When you omit the `MESSAGE` parameter, this will start a REPL session.
+
+```bash
+sc chat
+sc> Hello, how are you?
+Hello! I'm functioning as intended, thank you. How can I assist you today?
+```
 
 ## `config`
 
@@ -81,11 +72,11 @@ providers:
   ollama: # Ollama provider configuration
     base-url: http://localhost:11433
     model: qwen2:0.5b
-  openai: # OpenAI provider configuration
+  openai: # OpenAI provider configuration - see future work below
     base-url: https://api.openai.com/v1
     model: gpt-3.5-turbo
     options: {} # provider-specific options
-chat-memory:
+chat-memory: # Chat memory configuration e.g. jdbc for HSQLDB
   jdbc:
     url: jdbc:hsqldb:mem:testdb
     username: sa
@@ -98,9 +89,9 @@ By default, the configuration file is stored in `$HOME/.sc/config`. You can chan
 * `--dir`: Show the configuration directory. This option will display the path to the directory where the configuration
   files are stored. The default directory is `$HOME/.sc/` however this can be overridden by setting the `SC_CONFIG_DIR` environment variable.
 * `--file`: Show the configuration file. This option will display the path to the configuration file used by the CLI.
-* `--set`: Set a configuration setting. You need to provide the key and value in the format `key=value`. Invalid keys will be ignored. This option also creates the configuration file if it does not exist. The configuration file is stored in the directory specified by `--dir` or the default directory if not specified. The default configuration file is `$HOME/.sc/config`.
-* `--get`: Get the value of a specific configuration setting. You need to provide the key.
-* `--unset`: Unset a configuration setting. You need to provide the key.
+* `--set`: Set a configuration option. You need to provide the key and value in the format `key=value`. This option also creates the configuration file if it does not exist. You can view the location of the config directory with `--dir` option. The default configuration file is `$HOME/.sc/config`.
+* `--get`: Get the value of a specific configuration option. You need to specify the key.
+* `--unset`: Unset a configuration option. You need to specify the key.
 
 ### Usage <a name="config-usage"></a>
 
@@ -116,13 +107,13 @@ View the configuration file:
 sc config --file
 ```
 
-Set configuration properties. This option also creates the configuration file if it does not exist:
+Set configuration options. This creates the configuration file if it does not exist:
 
 ```bash
 sc config --set providers.ollama.base-url=http://localhost:11434 --set provider=ollama
 ```
 
-Get a configuration property:
+Get a configuration option value:
 
 ```bash
 sc config --get providers.ollama.base-url
@@ -136,7 +127,7 @@ sc config --unset providers.ollama.base-url --unset provider
 
 ## `config init`
 
-This command initializes the configuration file for the CLI. It creates a default configuration file if it does not already exist. This is useful for setting up the CLI for the first time or resetting the configuration. When you run this command, it will create a configuration file in the default directory (`$HOME/.sc/config`) with the default settings.
+This command initializes the configuration file for the CLI. It creates a default configuration file if it does not already exist. This is useful when setting up the CLI for the first time or resetting the configuration. When you run this command, it will create a configuration file in the default directory (`$HOME/.sc/`) with the default settings.
 
 > [!NOTE]
 > If the configuration file already exists, this command will not overwrite it. It will only create the file if it does not exist. You can override the default configuration directory by setting the `SC_CONFIG_DIR` environment variable.
@@ -149,34 +140,48 @@ sc config init
 
 ## `rag`
 
-This command allows you to interact with the RAG (Retrieval-Augmented Generation) system. It provides options to manage documents and attachments.
+This command allows you to interact with the RAG (Retrieval-Augmented Generation) system. You can load documents into a vector database or dump the RAG response to a file (dumping to file is only useful for testing and debugging). This is useful for processing documents and generating responses based on the content of those documents.
 
 ### Options <a name="rag-options"></a>
 
-* `-o, --output`: Specify output filename for the RAG response. This option must be used with the `--etl=file` option.
+* `-o, --output`: Specify output filename for the RAG response. This option must be used in conjunction with the `--etl=file` option.
 * `--etl`: Specify the ETL (Extract, Transform, Load) operation target. The available targets are:
   - `file`: Write output to a file from the local filesystem (default).
-  - `vectorStore`: Write output to a vector store.
 
 ### Parameters <a name="rag-parameters"></a>
 
-* `DOCUMENT`: The document to process. This can be a local file, a remote file (HTTPS), or a cloud storage file (S3, GCS, Azure).
-  The following protocols are supported:
-  - `file:///path/to/file`: Local file
-  - `https://<url>`: Remote file (only HTTPS is supported)
-  - `s3://<bucket>/<key>`: S3 file (Planned for future support)
+* `DOCUMENT`: The document to process. This can be a local document, a remote document (HTTPS), or a cloud document (S3, GCS, Azure).
+  Documents can be loaded from various sources; the following protocols are supported when loading documents:
+  - `file:///path/to/file`: Local document (absolute path)
+  - `https://path/to/page`: Remote document (only HTTPS is supported)
+
+The following document formats are supported:
+  - `application/pdf`: PDF files
+  - `text/html`: HTML files
+  - `text/plain`: Plain text files
+  - `text/markdown`: Markdown files (e.g. `.md` files)
+  - `application/json`: JSON files
 
 ### Usage <a name="rag-usage"></a>
 
 ```bash
+# Load a PDF document from the local filesystem and write the response to a file
 sc rag --etl=file --output output.txt file:///path/to/document.pdf
+# Load a HTM document from a remote URL and write the response to a file
+sc rag --etl=file --output output.txt https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html
+# Load a plain text document from a local file and write the response to a file
+sc rag --etl=file --output output.txt file:///path/to/plain.txt
+# Load a Markdown document from a remote URL and write the response to a file
+sc rag --etl=file --output output.txt https://raw.githubusercontent.com/juliuskrah/quartz-manager/refs/heads/master/README.md
+# Load a JSON document from the local filesystem and write the response to a file
+sc rag --etl=file --output output.txt file:///path/to/document.json
 ```
 
 ## Global Options
 
 * `-h, --help`: Show help message and exit.
 * `-v, --version`: Show the version of the CLI.
-* `--context`: Specify the context to use.
+* `--base-url`: Specify the base-url to use.
 
 # FAQ
 
@@ -185,26 +190,10 @@ sc rag --etl=file --output output.txt file:///path/to/document.pdf
 You can enable logging with the following environment variable:
 
 ```bash
-JAVA_TOOL_OPTIONS=-Dlogging.level.org.simplecommerce.ai.commerce=debug sc <args>
+JAVA_TOOL_OPTIONS=-Dlogging.level.org.sc.ai.cli=debug sc <args>
 ```
 
 # Development
-
-## Lightweight Container with Cloud Native Buildpacks
-If you're already familiar with Spring Boot container images support, this is the easiest way to get started.
-Docker should be installed and configured on your machine prior to creating the image.
-
-To create the image, run the following goal:
-
-```bash
-./gradlew bootBuildImage
-```
-
-Then, you can run the app like any other container:
-
-```bash
-docker run --rm commerce-projects/sc:0.0.1-SNAPSHOT
-```
 
 ## Executable with Native Build Tools
 Use this option if you want to explore more options such as running your tests in a native image.
@@ -233,9 +222,33 @@ To run your existing tests in a native image, run the following goal:
 ./gradlew nativeTest
 ```
 
-## Gradle Toolchain support
+# Future Work
 
-There are some limitations regarding Native Build Tools and Gradle toolchains.
-Native Build Tools disable toolchain support by default.
-Effectively, native image compilation is done with the JDK used to execute Gradle.
-You can read more about [toolchain support in the Native Build Tools here](https://graalvm.github.io/native-build-tools/latest/gradle-plugin.html#configuration-toolchains).
+- `chat`: Attach files when chatting with the model. Support the following document types:
+  - `image/*` - Image files
+  - `text/*` - Text files
+  - `application/pdf` - PDF files
+  - `application/vnd.openxmlformats-officedocument.wordprocessingml.document` - Word documents
+  - `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` - Excel spreadsheets
+  - `application/vnd.openxmlformats-officedocument.presentationml.presentation` - PowerPoint presentations
+  - `application/zip` - ZIP files
+  - `application/json` - JSON files
+- `chat memory`: Support for different memory backends:
+  - `rdbms`: Relational database management system (e.g. PostgreSQL, MySQL)
+  - `neo4j`: Neo4j graph database
+  - `cassandra`: Apache Cassandra
+- `chat LLM`: Support for different LLM providers:
+  - `google`: Google Gemini API
+  - `openai`: OpenAI API
+- `chat agent`: Implement an agent that can perform tasks based on user input and context.
+  - `tools`: Tool calling support for the agent.
+  - `mcp`: Model context protocol support for the agent.
+- `chat rag`: Leverage RAG (Retrieval-Augmented Generation) to enhance the chat experience by retrieving relevant documents and information from a vector store.
+- `rag`: Document sources from:
+    - `s3://<bucket>/<key>` - S3 document
+    - `gcs://<bucket>/<key>` - GCS document
+    - `azure://<container>/<blob>` - Azure Blob Storage document
+    - `github://<owner>/<repo>/<path>` - GitHub document
+    - `gitlab://<owner>/<repo>/<path>` - GitLab document
+- `rag vectorStore`: Support for different vector databases:
+    - `--etl=vectorStore`: Write output to a vector store. Used in a rag system to store and retrieve documents.
