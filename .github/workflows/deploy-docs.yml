@@ -1,7 +1,7 @@
 name: Deploy Documentation to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # Runs on pushes to main branch only (after PR merges)
   push:
     branches: ["main"]
 
