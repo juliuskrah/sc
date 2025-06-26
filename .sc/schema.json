@@ -1,5 +1,5 @@
 {
-    "$id": "https://juliuskrah.github.io/sc/schemas/schema.json",
+    "$id": "https://juliuskrah.com/sc/schemas/schema.json",
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "AI Config Schema",
     "type": "object",

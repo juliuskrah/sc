@@ -43,6 +43,7 @@ The workflow:
 - **Font Icons**: Modern iconography
 - **Syntax Highlighting**: Code examples with proper highlighting
 - **Cross-linking**: Easy navigation between commands
+- **JSON Schema**: Configuration schema available at `/schemas/schema.json`
 
 ## How to use
 
@@ -79,3 +80,58 @@ The workflow:
 - Optimized for fast loading
 
 This setup ensures that documentation stays synchronized with code changes and provides a professional presentation for users.
+
+## Monitoring and Troubleshooting
+
+### GitHub CLI Commands for Monitoring
+
+#### Check Workflow Status
+```bash
+# List recent workflow runs
+gh run list
+
+# View detailed status of a specific run
+gh run view <run-id>
+
+# Watch workflow in real-time
+gh run watch <run-id>
+```
+
+#### Monitor GitHub Pages
+```bash
+# Check Pages configuration
+gh api repos/:owner/:repo/pages
+
+# Check deployment status
+gh api repos/:owner/:repo/deployments --jq '.[] | select(.environment == "github-pages") | {id, sha, state}' | head -5
+
+# Check if site is live
+curl -I https://juliuskrah.com/sc/
+```
+
+#### Troubleshooting Commands
+```bash
+# View workflow logs
+gh run view <run-id> --log
+
+# View failed job logs specifically
+gh run view <run-id> --job=<job-id>
+
+# Manually trigger workflow
+gh workflow run deploy-docs.yml
+```
+
+### Current Status (as of setup)
+- ✅ **Workflow**: Successfully completed (Run ID: 15911840891)
+- ✅ **Deployment**: Success state achieved
+- ✅ **Site**: Live at https://juliuskrah.com/sc/
+- ✅ **Pages Config**: Using GitHub Actions as source
+- ✅ **HTTPS**: Enforced with approved certificate
+
+### Monitoring Checklist
+1. **After each push to main**: Run `gh run list` to verify workflow started
+2. **If workflow fails**: Use `gh run view <run-id> --log` to see error details
+3. **For deployment issues**: Check `gh api repos/:owner/:repo/deployments`
+4. **Site accessibility**: Use `curl -I` to verify HTTP 200 response
+
+The documentation is now live and automatically updates with each push to the main branch.

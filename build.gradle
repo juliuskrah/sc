@@ -105,12 +105,23 @@ task generateDocs {
     group = "Documentation"
     description = "Generate all documentation (AsciiDoc man pages converted to HTML)"
     doLast {
+        // Copy schema files to docs directory
+        mkdir("${project.buildDir}/docs/schemas")
+        copy {
+            from ".sc/schema.json"
+            into "${project.buildDir}/docs/schemas"
+        }
+        
         println "Documentation generated in: ${project.buildDir}/docs"
         println "Available files:"
         file("${project.buildDir}/docs").listFiles().each { file ->
             if (file.name.endsWith('.html')) {
                 println "  - ${file.name}"
             }
+        }
+        println "Schema files:"
+        file("${project.buildDir}/docs/schemas").listFiles().each { file ->
+            println "  - schemas/${file.name}"
         }
     }
 }

@@ -137,10 +137,16 @@ jobs:
                       <h3>sc help</h3>
                       <p>Get help for any command</p>
                   </a>
+                  
+                  <a href="schemas/schema.json" class="nav-card">
+                      <h3>Configuration Schema</h3>
+                      <p>JSON Schema for SC configuration files</p>
+                  </a>
               </div>
               
               <div class="footer">
                   <p>Generated from picocli command annotations</p>
+                  <p><small>Schema available at: <a href="schemas/schema.json">schemas/schema.json</a></small></p>
               </div>
           </body>
           </html>
@@ -149,6 +155,11 @@ jobs:
       - name: Copy documentation
         run: |
           cp build/docs/*.html docs-site/
+          
+      - name: Copy schema files
+        run: |
+          mkdir -p docs-site/schemas
+          cp .sc/schema.json docs-site/schemas/schema.json
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

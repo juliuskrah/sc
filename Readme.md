@@ -279,6 +279,17 @@ After running `generateDocs`, you'll find the following HTML files:
 - `sc-rag.html` - RAG command documentation
 - `sc-help.html` - Help command documentation
 
+### Configuration Schema
+
+The project includes a JSON Schema for configuration validation:
+- **Local**: `.sc/schema.json`
+- **Published**: `https://juliuskrah.com/sc/schemas/schema.json`
+
+The schema is automatically included in the GitHub Pages deployment and can be used for:
+- IDE autocomplete and validation in configuration files
+- Configuration validation in external tools
+- API documentation for configuration structure
+
 ### Manual Tasks
 
 You can also run individual documentation tasks:
