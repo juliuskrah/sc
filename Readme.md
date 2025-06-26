@@ -252,3 +252,79 @@ To run your existing tests in a native image, run the following goal:
     - `gitlab://<owner>/<repo>/<path>` - GitLab document
 - `rag vectorStore`: Support for different vector databases:
     - `--etl=vectorStore`: Write output to a vector store. Used in a rag system to store and retrieve documents.
+
+## Documentation
+
+This project includes comprehensive command-line documentation generated using picocli's ManPageGenerator.
+
+### Generating Documentation
+
+To generate HTML documentation for all commands:
+
+```bash
+./gradlew generateDocs
+```
+
+This will:
+1. Generate AsciiDoc man pages from the command annotations
+2. Convert them to HTML format using AsciiDoctor
+3. Place the HTML files in `build/docs/`
+
+### Available Documentation Files
+
+After running `generateDocs`, you'll find the following HTML files:
+- `sc.html` - Main command documentation
+- `sc-chat.html` - Chat command documentation
+- `sc-config.html` - Configuration command documentation  
+- `sc-rag.html` - RAG command documentation
+- `sc-help.html` - Help command documentation
+
+### Manual Tasks
+
+You can also run individual documentation tasks:
+- `./gradlew generateManpageAsciiDoc` - Generate only AsciiDoc files
+- `./gradlew asciidoctor` - Convert existing AsciiDoc files to HTML
+
+The documentation is automatically generated from the command-line interface annotations, ensuring it stays up-to-date with the actual command options and usage.
+
+### GitHub Pages
+
+The project is configured to automatically deploy documentation to GitHub Pages when changes are pushed to the main branch. The GitHub Actions workflow:
+
+1. **Builds the documentation** using Gradle and picocli's ManPageGenerator
+2. **Converts AsciiDoc to HTML** using AsciiDoctor with modern styling
+3. **Creates an index page** with navigation to all command documentation
+4. **Deploys to GitHub Pages** using the official GitHub Actions
+
+#### Accessing the Live Documentation
+
+Once deployed, the documentation will be available at:
+```
+https://<username>.github.io/<repository-name>/
+```
+
+#### GitHub Pages Setup
+
+To enable GitHub Pages for this repository:
+
+1. Go to repository **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions**
+3. The workflow will automatically run on the next push to main
+
+The workflow file is located at `.github/workflows/deploy-docs.yml` and includes:
+- Java 22 setup for building the project
+- Gradle configuration for documentation generation
+- Automated deployment to GitHub Pages
+- Custom index page with navigation
+
+### Local Development
+
+For local documentation development, you can serve the docs locally:
+```bash
+# Generate docs
+./gradlew generateDocs
+
+# Serve locally (if you have Python installed)
+cd build/docs && python -m http.server 8000
+# Then visit http://localhost:8000
+```

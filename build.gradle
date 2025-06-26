@@ -3,6 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.5.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.graalvm.buildtools.native' version '0.10.6'
+	id 'org.asciidoctor.jvm.convert' version '4.0.3'
 }
 
 group = 'org.simplecommerce.ai'
@@ -26,6 +27,10 @@ ext {
     set('jlineVersion', "3.30.0")
 }
 
+configurations {
+    generateConfig
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation('org.springframework.ai:spring-ai-starter-model-ollama') {
@@ -41,6 +46,7 @@ dependencies {
     implementation "info.picocli:picocli-spring-boot-starter:${picocliVersion}"
 	implementation "info.picocli:picocli-shell-jline3:${picocliVersion}"
 	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+    generateConfig "info.picocli:picocli-codegen:${picocliVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:ollama:1.21.0'
@@ -69,6 +75,44 @@ springBoot {
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+task generateManpageAsciiDoc(type: JavaExec) {
+    dependsOn(classes)
+    group = "Documentation"
+    description = "Generate AsciiDoc manpage"
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    mainClass = 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    args 'org.simplecommerce.ai.commerce.command.DocumentationTopCommand', "--outdir=${project.buildDir}/generated-picocli-docs", "-v"
+}
+
+asciidoctor {
+    dependsOn(generateManpageAsciiDoc)
+    sourceDir = file("${project.buildDir}/generated-picocli-docs")
+    outputDir = file("${project.buildDir}/docs")
+    logDocuments = true
+    outputOptions {
+        backends = ['html5']
+    }
+    attributes = [
+        'source-highlighter': 'coderay',
+        'icons': 'font'
+    ]
+}
+
+task generateDocs {
+    dependsOn(asciidoctor)
+    group = "Documentation"
+    description = "Generate all documentation (AsciiDoc man pages converted to HTML)"
+    doLast {
+        println "Documentation generated in: ${project.buildDir}/docs"
+        println "Available files:"
+        file("${project.buildDir}/docs").listFiles().each { file ->
+            if (file.name.endsWith('.html')) {
+                println "  - ${file.name}"
+            }
+        }
+    }
 }
 
 graalvmNative {
