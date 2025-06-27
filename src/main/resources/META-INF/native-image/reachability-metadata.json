@@ -978,7 +978,7 @@
       "type": "org.reactivestreams.Publisher"
     },
     {
-      "type": "org.simplecommerce.ai.commerce.ChatbotApplication",
+      "type": "org.sc.ai.cli.ChatbotApplication",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -994,7 +994,7 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.CliConfiguration",
+      "type": "org.sc.ai.cli.CliConfiguration",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1015,26 +1015,26 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.CliInitializer",
+      "type": "org.sc.ai.cli.CliInitializer",
       "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
             "picocli.CommandLine$IFactory",
-            "org.simplecommerce.ai.commerce.command.TopCommand"
+            "org.sc.ai.cli.command.TopCommand"
           ]
         }
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.chat.ChatCommand",
+      "type": "org.sc.ai.cli.chat.ChatCommand",
       "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
-            "org.simplecommerce.ai.commerce.chat.ChatService",
+            "org.sc.ai.cli.chat.ChatService",
             "org.jline.reader.LineReader",
             "org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties"
           ]
@@ -1042,7 +1042,7 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.chat.ChatService",
+      "type": "org.sc.ai.cli.chat.ChatService",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1055,7 +1055,7 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.command.ChatbotVersionProvider",
+      "type": "org.sc.ai.cli.command.ChatbotVersionProvider",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1065,7 +1065,7 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.command.OllamaMixin",
+      "type": "org.sc.ai.cli.command.OllamaMixin",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1075,7 +1075,7 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.command.TopCommand",
+      "type": "org.sc.ai.cli.command.TopCommand",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1087,23 +1087,23 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.config.ConfigCommand",
+      "type": "org.sc.ai.cli.config.ConfigCommand",
       "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
-            "org.simplecommerce.ai.commerce.config.ConfigService"
+            "org.sc.ai.cli.config.ConfigService"
           ]
         }
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.config.ConfigCommand$Options",
+      "type": "org.sc.ai.cli.config.ConfigCommand$Options",
       "allDeclaredFields": true
     },
     {
-      "type": "org.simplecommerce.ai.commerce.config.ConfigService",
+      "type": "org.sc.ai.cli.config.ConfigService",
       "allDeclaredFields": true,
       "methods": [
         {
@@ -1113,19 +1113,19 @@
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.rag.RagCommand",
+      "type": "org.sc.ai.cli.rag.RagCommand",
       "allDeclaredFields": true,
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
-            "org.simplecommerce.ai.commerce.rag.RagService"
+            "org.sc.ai.cli.rag.RagService"
           ]
         }
       ]
     },
     {
-      "type": "org.simplecommerce.ai.commerce.rag.RagService",
+      "type": "org.sc.ai.cli.rag.RagService",
       "allDeclaredFields": true,
       "methods": [
         {
