@@ -8,7 +8,7 @@ plugins {
 
 group = 'org.simplecommerce.ai'
 version = '0.0.1-SNAPSHOT'
-description = 'Simple Commerce'
+description = 'sc cli - simple ai for everyday people'
 
 java {
 	toolchain {
@@ -86,9 +86,55 @@ task generateManpageAsciiDoc(type: JavaExec) {
     args 'org.simplecommerce.ai.commerce.command.DocumentationTopCommand', "--outdir=${project.buildDir}/generated-picocli-docs", "-v"
 }
 
+task generateManpageTemplates(type: JavaExec) {
+    dependsOn(classes)
+    group = "Documentation"
+    description = "Generate AsciiDoc manpage templates (run only once to create templates)"
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    mainClass = 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    args 'org.simplecommerce.ai.commerce.command.DocumentationTopCommand', 
+         "--outdir=${project.buildDir}/generated-picocli-docs", 
+         "--template-dir=src/docs/man-templates",
+         "--force",
+         "-v"
+}
+
+task generateEnhancedDocs(type: JavaExec) {
+    dependsOn(classes)
+    group = "Documentation"
+    description = "Generate documentation using templates (if they exist) or standard generation"
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    mainClass = 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    
+    doFirst {
+        def templatesDir = file("src/docs/man-templates")
+        if (templatesDir.exists() && templatesDir.listFiles().length > 0) {
+            println "Using existing templates from: ${templatesDir}"
+            args 'org.simplecommerce.ai.commerce.command.DocumentationTopCommand', 
+                 "--outdir=${project.buildDir}/generated-picocli-docs", 
+                 "-v"
+        } else {
+            println "No templates found, using standard generation"
+            args 'org.simplecommerce.ai.commerce.command.DocumentationTopCommand', 
+                 "--outdir=${project.buildDir}/generated-picocli-docs", 
+                 "-v"
+        }
+    }
+}
+
 asciidoctor {
-    dependsOn(generateManpageAsciiDoc)
-    sourceDir = file("${project.buildDir}/generated-picocli-docs")
+    dependsOn(generateEnhancedDocs)
+    
+    // Determine source directory based on whether templates exist
+    def templatesDir = file("src/docs/man-templates")
+    if (templatesDir.exists() && templatesDir.listFiles().length > 0) {
+        sourceDir = templatesDir
+        println "Using templates from: ${templatesDir}"
+    } else {
+        sourceDir = file("${project.buildDir}/generated-picocli-docs")
+        println "Using generated docs from: ${project.buildDir}/generated-picocli-docs"
+    }
+    
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
     outputOptions {
@@ -96,7 +142,8 @@ asciidoctor {
     }
     attributes = [
         'source-highlighter': 'coderay',
-        'icons': 'font'
+        'icons': 'font',
+        'includedir': "${project.buildDir}/generated-picocli-docs"
     ]
 }
 

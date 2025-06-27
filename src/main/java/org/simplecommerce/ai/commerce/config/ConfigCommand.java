@@ -44,12 +44,13 @@ public class ConfigCommand implements Runnable {
             if (dir != null) {
                 spec.commandLine().getOut().println(dir);
             } else {
-                spec.commandLine().getOut().println(Ansi.AUTO.string("""
-                Configuration directory does not exist, you can use any of the following options to create it:
+                spec.commandLine().getOut().println(Ansi.AUTO
+                        .string("""
+                                Configuration directory does not exist, you can use any of the following options to create it:
 
-                    @|bold sc config init|@                  Initialize the configuration file
-                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
-                """));
+                                    @|bold sc config init|@                  Initialize the configuration file
+                                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
+                                """));
             }
         }
         if (options.file) {
@@ -57,12 +58,13 @@ public class ConfigCommand implements Runnable {
             if (file != null) {
                 spec.commandLine().getOut().println(file);
             } else {
-                spec.commandLine().getOut().println(Ansi.AUTO.string("""
-                Configuration file does not exist, you can use any of the following options to create a config file:
+                spec.commandLine().getOut().println(Ansi.AUTO
+                        .string("""
+                                Configuration file does not exist, you can use any of the following options to create a config file:
 
-                    @|bold sc config init|@                  Initialize the configuration file
-                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
-                """));
+                                    @|bold sc config init|@                  Initialize the configuration file
+                                    @|bold sc config|@ @|fg(yellow) --set|@=@|italic KEY=VALUE|@       Set configuration key-value pairs
+                                """));
             }
         }
         if (options.get != null) {
@@ -83,7 +85,7 @@ public class ConfigCommand implements Runnable {
     }
 
     @Command(name = "init", description = "Initialize the configuration file", mixinStandardHelpOptions = true, versionProvider = ChatbotVersionProvider.class, subcommands = CommandLine.HelpCommand.class)
-    public void init() {
+    public void init(@Mixin ProviderMixin providerMixin) {
         configService.init();
         spec.commandLine().getOut().println("Configuration file initialized.");
     }
@@ -93,11 +95,11 @@ public class ConfigCommand implements Runnable {
         private boolean dir;
         @Option(names = "--file", paramLabel = "FILE", description = "Display the configuration file")
         private boolean file;
-        @Option(names = "--set", paramLabel = "KEY=VALUE", description = "Set configuration key-value pairs")
+        @Option(names = { "-s", "--set" }, paramLabel = "KEY=VALUE", description = "Set configuration key-value pairs")
         private Map<String, String> set;
-        @Option(names = "--get", paramLabel = "KEY", description = "Get a configuration value by key")
+        @Option(names = { "-g", "--get" }, paramLabel = "KEY", description = "Get a configuration value by key")
         private String get;
-        @Option(names = "--unset", paramLabel = "KEY", description = "Unset a configuration properties")
+        @Option(names = { "-u", "--unset" }, paramLabel = "KEY", description = "Unset a configuration properties")
         private List<String> unset;
     }
 }

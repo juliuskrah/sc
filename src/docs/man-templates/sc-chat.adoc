@@ -1,0 +1,138 @@
+:includedir: ../../../build/generated-picocli-docs
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-header]
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-name]
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-synopsis]
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-description]
+
+== Usage Modes
+
+=== REPL Mode
+
+When no message is provided, `sc chat` starts in REPL mode:
+
+[source,bash]
+----
+sc chat
+sc> Hello, how are you today?
+Hello! I'm doing well, thank you for asking. How can I help you today?
+sc> What is the weather like?
+I don't have access to current weather data, but I can help you with weather-related questions or point you to weather services.
+sc> exit
+----
+
+=== Single-shot Message Mode
+
+Provide a message as an argument for one-time questions:
+
+[source,bash]
+----
+sc chat "What is the capital of France?"
+The capital of France is Paris.
+----
+
+== Model Selection
+
+You can specify different models for different use cases:
+
+=== General Purpose
+
+[source,bash]
+----
+sc chat -m llama3.2 "Explain quantum computing"
+----
+
+=== Code Generation
+
+[source,bash]
+----
+sc chat -m codellama "Write a Python function to sort a list"
+----
+
+=== Creative Writing
+
+[source,bash]
+----
+sc chat -m mistral "Write a short story about space exploration"
+----
+
+== REPL Commands
+
+In REPL mode, you can use these special commands:
+
+`/exit` or `/quit` or `/bye`::
+  Exit the chat session
+
+`/help` or `/?`::
+  Show available commands
+
+`/clear`::
+  Clear the chat history
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-options]
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-arguments]
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-commands]
+
+== Examples
+
+Start REPL session with default model:
+
+[source,bash]
+----
+sc chat
+----
+
+Ask a quick question:
+
+[source,bash]
+----
+sc chat "How do I install Python?"
+----
+
+Use a specific model:
+
+[source,bash]
+----
+sc chat -m codellama "Show me a Java hello world example"
+----
+
+Connect to remote Ollama instance:
+
+[source,bash]
+----
+sc --base-url http://192.168.1.100:11434 chat -m llama3.2
+----
+
+== Configuration
+
+The chat command respects these configuration settings:
+
+`provider`::
+  LLM provider selection
+
+`providers.ollama.model`::
+  Default model to use when none specified
+
+`providers.ollama.base-url`::
+  Ollama server endpoint
+
+Set these with:
+
+[source,bash]
+----
+sc config --set provider=ollama
+sc config --set providers.ollama.model=llama3.2
+sc config --set providers.ollama.base-url=https://ollama.example.com/api/
+----
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-exit-status]
+
+== See Also
+
+*sc*(1), *sc-config*(1)
+
+include::{includedir}/sc-chat.adoc[tag=picocli-generated-man-section-footer]

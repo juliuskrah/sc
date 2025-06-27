@@ -1,0 +1,77 @@
+:includedir: ../../../build/generated-picocli-docs
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-header]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-name]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-synopsis]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-description]
+
+== What Gets Created
+
+When you run `sc config init`, the following files and directories are created:
+
+`$HOME/.sc/`::
+  Configuration directory created with appropriate permissions
+
+`$HOME/.sc/config`::
+  Main configuration file with default settings
+
+== Default Configuration
+
+The initialization process creates a configuration file with these default values:
+
+[source,yaml]
+----
+provider: ollama
+providers:
+  ollama:
+    base-url: http://localhost:11434
+----
+
+== Behavior
+
+* If the configuration directory already exists, it will not be overwritten
+* If a configuration file already exists, it is left unchanged
+* Default values are optimized for local Ollama installation
+
+== Examples
+
+Basic initialization:
+
+[source,bash]
+----
+sc config init
+----
+
+Initialize and then customize:
+
+[source,bash]
+----
+sc config init
+sc config --set providers.ollama.model=codellama
+sc config --set providers.ollama.base-url=http://192.168.1.100:11434
+----
+
+Verify initialization:
+
+[source,bash]
+----
+sc config init
+sc config --file
+sc config --get providers.ollama.base-url
+----
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-options]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-arguments]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-commands]
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-exit-status]
+
+== See Also
+
+*sc-config*(1), *sc*(1)
+
+include::{includedir}/sc-config-init.adoc[tag=picocli-generated-man-section-footer]
