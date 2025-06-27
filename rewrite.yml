@@ -1,0 +1,65 @@
+#
+# OpenRewrite Recipe Configuration
+# This configuration file defines custom recipes for the sc CLI project
+#
+type: specs.openrewrite.org/v1beta/recipe
+name: com.simplecommerce.ai.commerce.PackageMigrationRecipe
+displayName: Migrate package structure from org.simplecommerce.ai.commerce to org.sc.ai.cli
+description: Migrates all Java classes from the old package structure to the new simplified package structure.
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.simplecommerce.ai.commerce
+      newPackageName: org.sc.ai.cli
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.simplecommerce.ai.commerce.chat
+      newPackageName: org.sc.ai.cli.chat
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.simplecommerce.ai.commerce.command
+      newPackageName: org.sc.ai.cli.command
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.simplecommerce.ai.commerce.config
+      newPackageName: org.sc.ai.cli.config
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: org.simplecommerce.ai.commerce.rag
+      newPackageName: org.sc.ai.cli.rag
+      recursive: true
+  # Update any references in configuration files
+  - org.openrewrite.text.FindAndReplace:
+      find: "org.simplecommerce.ai.commerce"
+      replace: "org.sc.ai.cli"
+      filePattern: "**/*.properties"
+  - org.openrewrite.text.FindAndReplace:
+      find: "org.simplecommerce.ai.commerce"
+      replace: "org.sc.ai.cli"
+      filePattern: "**/*.yaml"
+  - org.openrewrite.text.FindAndReplace:
+      find: "org.simplecommerce.ai.commerce"
+      replace: "org.sc.ai.cli"
+      filePattern: "**/*.yml"
+  - org.openrewrite.text.FindAndReplace:
+      find: "org.simplecommerce.ai.commerce"
+      replace: "org.sc.ai.cli"
+      filePattern: "**/*.json"
+  # Update gradle build script references
+  - org.openrewrite.text.FindAndReplace:
+      find: "group = 'org.simplecommerce.ai'"
+      replace: "group = 'org.sc.ai'"
+      filePattern: "**/build.gradle"
+  - org.openrewrite.text.FindAndReplace:
+      find: "org.simplecommerce.ai.commerce"
+      replace: "org.sc.ai.cli"
+      filePattern: "**/build.gradle"
+  # Update package declarations in all source and test files
+  - org.openrewrite.text.FindAndReplace:
+      find: "package org.simplecommerce.ai.commerce"
+      replace: "package org.sc.ai.cli"
+      filePattern: "**/*.java"
+  # Update imports in all source and test files
+  - org.openrewrite.text.FindAndReplace:
+      find: "import org.simplecommerce.ai.commerce"
+      replace: "import org.sc.ai.cli"
+      filePattern: "**/*.java"
