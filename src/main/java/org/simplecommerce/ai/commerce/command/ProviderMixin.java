@@ -33,7 +33,7 @@ public class ProviderMixin {
         return ((TopCommand) mixee.root().userObject()).getEndpoint();
     }
     
-    @Option(names = { "--base-url" }, paramLabel = "BASE_URL", description = "Ollama API endpoint")
+    @Option(names = { "--base-url" }, paramLabel = "BASE_URL", description = "Provider API endpoint")
     public void setBaseUrl(String baseUrl) {
         topLevelOllamaMixin(mixee).baseUrl = baseUrl;
     }

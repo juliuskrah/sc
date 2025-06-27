@@ -1,0 +1,148 @@
+:includedir: ../../../build/generated-picocli-docs
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-header]
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-name]
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-synopsis]
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-description]
+
+== Getting Started
+
+sc is designed to make AI interactions simple and powerful. Before using the tool, you may want to initialize your configuration:
+
+[source,bash]
+----
+sc config init
+----
+
+This creates a configuration directory at `$HOME/.sc/` and sets up default values for connecting to Ollama.
+
+== Common Workflows
+
+=== Basic Chat Session
+Start an REPL chat session with the default model:
+
+[source,bash]
+----
+sc chat
+----
+
+=== Quick Question
+Ask a single question without entering REPL mode:
+
+[source,bash]
+----
+sc chat "What is machine learning?"
+----
+
+=== Using Different Models
+Specify a different model for specialized tasks:
+
+[source,bash]
+----
+sc chat -m codellama "Write a Python function to calculate fibonacci numbers"
+----
+
+=== Processing Documents
+Use RAG to process and understand documents:
+
+[source,bash]
+----
+sc rag file:///path/to/document.pdf -o out.txt
+sc rag https://example.com/article.html --etl=vectorStore
+----
+
+=== Configuration Management
+View and modify configuration settings:
+
+[source,bash]
+----
+sc config --get providers.ollama.model
+sc config --set providers.ollama.model=llama3.2
+sc config --file
+----
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-options]
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-arguments]
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-commands]
+
+== Configuration
+
+sc uses a hierarchical configuration system:
+
+1. **Command line options** (highest priority)
+2. **Configuration file** at `$HOME/.sc/config`
+3. **Default values** (lowest priority)
+
+=== Configuration File Format
+
+The configuration file uses YAML format:
+
+[source,yaml]
+----
+provider: ollama
+providers:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.2
+chat-memory:
+  jdbc:
+    url: jdbc:hsqldb:mem:testdb
+----
+
+=== Environment Variables
+
+You can also use environment variables:
+
+[source,bash]
+----
+export PROVIDERS_OLLAMA_BASE_URL=http://192.168.1.100:11434
+export PROVIDERS_OLLAMA_MODEL=codellama
+----
+
+== Examples
+
+=== REPL Chat with Custom Model
+
+[source,bash]
+----
+sc --base-url=http://192.168.1.100:11434 chat -m codellama
+----
+
+=== Batch Document Processing
+
+[source,bash]
+----
+# Process multiple documents
+for doc in *.pdf; do
+  sc rag "file://$(pwd)/$doc" --etl=vectorStore
+done
+----
+
+=== Configuration Setup for Remote Ollama
+
+[source,bash]
+----
+sc config init
+sc config --set providers.ollama.base-url=http://192.168.1.100:11434
+sc config --set providers.ollama.model=llama3.2
+----
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-exit-status]
+
+== Files
+
+`$HOME/.sc/config`::
+  Main configuration file
+
+`$HOME/.sc/`::
+  Configuration directory
+
+== Bugs
+
+Report bugs at: https://github.com/juliuskrah/sc/issues
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-footer]

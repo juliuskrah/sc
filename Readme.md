@@ -222,6 +222,18 @@ To run your existing tests in a native image, run the following goal:
 ./gradlew nativeTest
 ```
 
+## Local Documentation
+
+For local documentation development, you can serve the docs locally:
+```bash
+# Generate docs
+./gradlew generateDocs
+
+# Serve locally (if you have Python installed)
+cd build/docs && python -m http.server 8000
+# Then visit http://localhost:8000
+```
+
 # Future Work
 
 - `chat`: Attach files when chatting with the model. Support the following document types:
@@ -253,33 +265,89 @@ To run your existing tests in a native image, run the following goal:
 - `rag vectorStore`: Support for different vector databases:
     - `--etl=vectorStore`: Write output to a vector store. Used in a rag system to store and retrieve documents.
 
-## Documentation
+# Working with Documentation
 
-This project includes comprehensive command-line documentation generated using picocli's ManPageGenerator.
+This documentation for this project is generated using picocli's ManPageGenerator with template support for enhanced documentation.
 
-### Generating Documentation
+## Generating Documentation
 
-To generate HTML documentation for all commands:
+The documentation system supports two modes:
 
+### Standard Generation
+Automatically generates documentation from command annotations:
 ```bash
 ./gradlew generateDocs
 ```
 
-This will:
-1. Generate AsciiDoc man pages from the command annotations
-2. Convert them to HTML format using AsciiDoctor
-3. Place the HTML files in `build/docs/`
+### Template-Enhanced Generation  
+Uses customizable templates for richer documentation content:
+```bash
+# First time only: Generate initial templates
+./gradlew generateManpageTemplates
 
-### Available Documentation Files
+# Then use enhanced documentation generation
+./gradlew generateDocs
+```
 
-After running `generateDocs`, you'll find the following HTML files:
-- `sc.html` - Main command documentation
-- `sc-chat.html` - Chat command documentation
-- `sc-config.html` - Configuration command documentation  
-- `sc-rag.html` - RAG command documentation
-- `sc-help.html` - Help command documentation
+## Template System
 
-### Configuration Schema
+The template system allows for customization of the generated documentation while preserving the automatically generated command information.
+
+### Template Structure
+
+Templates are stored in `src/docs/man-templates/` and use AsciiDoctor's include mechanism:
+
+```asciidoc
+// Main template file example
+:includedir: ../../../build/generated-picocli-docs
+
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-header]
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-name]  
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-synopsis]
+
+// Add custom sections here
+== Getting Started
+This section provides additional context...
+
+== Examples  
+Additional examples beyond what's auto-generated...
+
+// Continue with generated sections
+include::{includedir}/sc.adoc[tag=picocli-generated-man-section-options]
+```
+
+### Available Templates
+
+The following template files have been created and enhanced:
+
+- `sc.adoc` - Main command with getting started guide and workflows
+- `sc-chat.adoc` - Chat command with interactive mode examples
+- `sc-config.adoc` - Configuration management documentation
+- `sc-config-init.adoc` - Configuration initialization
+- `sc-rag.adoc` - RAG system with usage examples
+- `sc-help.adoc` - Help command documentation
+
+### Template Features
+
+Each template includes:
+
+- **Custom sections** with detailed explanations between generated content
+- **Enhanced examples** and real-world use cases
+- **Configuration details** and troubleshooting guides
+- **Cross-references** to related commands and concepts
+- **Additional context** not available in code annotations alone
+
+## Available Documentation Files
+
+After running `generateDocs`, you'll find the following enhanced HTML files:
+- `sc.html` - Main command (with getting started guide and workflows)
+- `sc-chat.html` - Chat functionality (with interactive mode examples)  
+- `sc-config.html` - Configuration management (with hierarchy details)
+- `sc-config-init.html` - Configuration initialization
+- `sc-rag.html` - RAG system usage (with protocol and format details)
+- `sc-help.html` - Help system
+
+## Configuration Schema
 
 The project includes a JSON Schema for configuration validation:
 - **Local**: `.sc/schema.json`
@@ -290,15 +358,36 @@ The schema is automatically included in the GitHub Pages deployment and can be u
 - Configuration validation in external tools
 - API documentation for configuration structure
 
-### Manual Tasks
+## Documentation Tasks
 
-You can also run individual documentation tasks:
-- `./gradlew generateManpageAsciiDoc` - Generate only AsciiDoc files
-- `./gradlew asciidoctor` - Convert existing AsciiDoc files to HTML
+Available Gradle tasks for documentation:
 
-The documentation is automatically generated from the command-line interface annotations, ensuring it stays up-to-date with the actual command options and usage.
+```bash
+# Generate enhanced documentation (uses templates if available)
+./gradlew generateDocs
 
-### GitHub Pages
+# Generate initial templates (run only once)
+./gradlew generateManpageTemplates
+
+# Individual tasks
+./gradlew generateEnhancedDocs  # Generate AsciiDoc with template support
+./gradlew asciidoctor           # Convert AsciiDoc to HTML
+```
+
+The build system automatically detects whether templates exist and uses them for enhanced output, or falls back to standard generation.
+
+## Template Management
+
+Templates are version-controlled and should be:
+
+- **Generated once**: Use `generateManpageTemplates` only to create initial templates
+- **Manually maintained**: Edit templates to add custom content and examples  
+- **Preserved**: The build system will not overwrite existing templates
+- **Enhanced incrementally**: Add new sections and examples as the CLI evolves
+
+The documentation is generated from both command-line interface annotations and enhanced template content, ensuring it stays accurate while providing rich contextual information.
+
+# GitHub Pages
 
 The project is configured to automatically deploy documentation to GitHub Pages when changes are pushed to the main branch. The GitHub Actions workflow:
 
@@ -307,35 +396,10 @@ The project is configured to automatically deploy documentation to GitHub Pages 
 3. **Creates an index page** with navigation to all command documentation
 4. **Deploys to GitHub Pages** using the official GitHub Actions
 
-#### Accessing the Live Documentation
+## Accessing the Live Documentation
 
 Once deployed, the documentation will be available at:
+
 ```
-https://<username>.github.io/<repository-name>/
-```
-
-#### GitHub Pages Setup
-
-To enable GitHub Pages for this repository:
-
-1. Go to repository **Settings** → **Pages**
-2. Under **Source**, select **GitHub Actions**
-3. The workflow will automatically run on the next push to main
-
-The workflow file is located at `.github/workflows/deploy-docs.yml` and includes:
-- Java 22 setup for building the project
-- Gradle configuration for documentation generation
-- Automated deployment to GitHub Pages
-- Custom index page with navigation
-
-### Local Development
-
-For local documentation development, you can serve the docs locally:
-```bash
-# Generate docs
-./gradlew generateDocs
-
-# Serve locally (if you have Python installed)
-cd build/docs && python -m http.server 8000
-# Then visit http://localhost:8000
+https://juliuskrah.com/sc/
 ```

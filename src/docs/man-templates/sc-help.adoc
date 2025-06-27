@@ -1,0 +1,20 @@
+:includedir: /Users/julius.krah/Documents/github/simple-commerce/commerce-ai/build/generated-picocli-docs
+//include::{includedir}/sc-help.adoc[tag=picocli-generated-full-manpage]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-header]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-name]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-synopsis]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-description]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-options]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-arguments]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-commands]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-exit-status]
+
+include::{includedir}/sc-help.adoc[tag=picocli-generated-man-section-footer]

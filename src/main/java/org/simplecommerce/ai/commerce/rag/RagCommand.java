@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import org.simplecommerce.ai.commerce.command.ChatbotVersionProvider;
+import org.simplecommerce.ai.commerce.command.ProviderMixin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Spec;
@@ -27,6 +29,8 @@ public class RagCommand implements Runnable {
     
     @Spec
     private CommandLine.Model.CommandSpec spec;
+    @Mixin
+    private ProviderMixin providerMixin;
 
     @Option(names = { "-o", "--output" }, paramLabel = "OUTPUT_FILE", description = "Output filename for the RAG response. Must be used with '--etl=file'")
     private Path outputFile;
