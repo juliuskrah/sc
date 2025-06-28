@@ -3,13 +3,20 @@ package org.sc.ai.cli.chat;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Optional;
 import java.util.UUID;
-
+import org.jline.console.SystemRegistry;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.Binding;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
+import org.jline.reader.Reference;
+import org.jline.reader.UserInterruptException;
+import org.jline.widget.TailTipWidgets;
+import org.jline.widget.Widgets;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
-
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
 import org.slf4j.Logger;
@@ -30,6 +37,7 @@ public class ChatCommand implements Runnable {
     private final ChatService chatService;
     private final OllamaChatProperties ollamaChatProperties;
     private final LineReader reader;
+    private final SystemRegistry systemRegistry;
     @Parameters(arity = "0..1", paramLabel = "MESSAGE", description = "Message to send")
     private String message;
     @Option(names = { "-m",
@@ -40,31 +48,54 @@ public class ChatCommand implements Runnable {
     @Spec
     private CommandLine.Model.CommandSpec spec;
 
-    public ChatCommand(ChatService chatService, LineReader reader, OllamaChatProperties ollamaChatProperties) {
-        this.chatService = chatService;
-        this.reader = reader;
-        this.ollamaChatProperties = ollamaChatProperties;
-    }
-
     private String fromStdIn() throws IOException {
-        var messageBuilder = new StringBuilder();
-        if(System.in.available() == 0) {
+        if (System.in.available() == 0) {
             return null;
         }
+        var messageBuilder = new StringBuilder();
         try (var bufferedReader = new BufferedReader(new InputStreamReader(System.in))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 messageBuilder.append(line).append("\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Encountered an error when reading from STDIN", e);
         }
         return messageBuilder.toString().trim();
     }
 
+    private void streamModelResponse(String userMessage, String conversationId, PrintWriter writer) {
+        model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
+        logger.debug("LLM model: {}", model);
+        var streamingResponse = chatService.sendAndStreamMessage(userMessage, model, conversationId);
+        streamingResponse.toStream().forEach(chunk -> {
+            writer.print(Ansi.AUTO.string(chunk));
+            writer.flush();
+        });
+        writer.println();
+    }
+
+    public ChatCommand(ChatService chatService, LineReader reader, OllamaChatProperties ollamaChatProperties,
+            SystemRegistry systemRegistry) {
+        this.chatService = chatService;
+        this.reader = reader;
+        this.ollamaChatProperties = ollamaChatProperties;
+        this.systemRegistry = systemRegistry;
+    }
+
     @Override
     public void run() {
+        loadMessageFromStdInIfNeeded();
         var conversationId = UUID.randomUUID().toString();
+        
+        if (message == null || message.isBlank()) {
+            startInteractiveMode(conversationId);
+        } else {
+            streamModelResponse(message, conversationId, spec.commandLine().getOut());
+        }
+    }
+    
+    private void loadMessageFromStdInIfNeeded() {
         if (message == null) {
             try {
                 message = fromStdIn();
@@ -72,30 +103,56 @@ public class ChatCommand implements Runnable {
                 logger.warn("Error reading from stdin", e);
             }
         }
-        model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
-        logger.debug("Using chat model: {}", model);
-        if (message == null || message.isBlank()) {
-            reader.getTerminal().flush();
-            while (true) {
-                var line = reader.readLine(PROMPT);
-                if ("exit".equals(line) || "quit".equals(line)) {
-                    break;
+    }
+    
+    private void startInteractiveMode(String conversationId) {
+        reader.getTerminal().flush();
+        setupWidgetsAndKeyBindings();
+        
+        while (true) {
+            try {
+                if (!processUserInput(conversationId)) {
+                    return;
                 }
-                var streamingResponse = chatService.sendAndStreamMessage(line, model, conversationId);
-                streamingResponse.toStream().forEach(chunk -> {
-                    reader.getTerminal().writer().print(Ansi.AUTO.string(chunk));
-                    reader.getTerminal().flush();
-                });
-                reader.getTerminal().writer().println();
                 reader.getTerminal().flush();
+            } catch (UserInterruptException _) {
+                // Ctrl-C pressed, ignore and continue
+            } catch (EndOfFileException _) {
+                // Ctrl-D pressed, exit
+                return;
+            } catch (Exception e) {
+                systemRegistry.trace(e);
             }
-        } else {
-            var streamingResponse = chatService.sendAndStreamMessage(message, model, conversationId);
-            streamingResponse.toStream().forEach(chunk -> {
-                spec.commandLine().getOut().print(Ansi.AUTO.string(chunk));
-                spec.commandLine().getOut().flush();
-            });
-            spec.commandLine().getOut().println();
         }
     }
+    
+    private void setupWidgetsAndKeyBindings() {
+        TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5,
+                TailTipWidgets.TipType.COMPLETER);
+        widgets.enable();
+        KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
+        keyMap.bind(new Reference(Widgets.TAILTIP_TOGGLE), KeyMap.alt("s"));
+    }
+    
+    private boolean processUserInput(String conversationId) throws Exception {
+        systemRegistry.cleanUp();
+        var line = reader.readLine(PROMPT).trim();
+        
+        if (line.isBlank()) {
+            return true;
+        }
+        
+        if ("exit".equals(line) || "quit".equals(line)) {
+            return false;
+        }
+        
+        if (line.startsWith("/") || "help".equals(line)) {
+            systemRegistry.execute(line);
+        } else {
+            streamModelResponse(line, conversationId, reader.getTerminal().writer());
+        }
+        
+        return true;
+    }
+
 }
