@@ -13,10 +13,10 @@ import picocli.CommandLine.Spec;
 
 @Component
 @Command(name = "", description = {
-                "Hit @|magenta <TAB>|@ to see available commands",
-                "Hit @|magenta ALT-S|@ to toggle tailtips",
-                "" }, footer = { "Use \"\"\" to begin a multi-line message.",
-                                "Use /path/to/file to include .jpg, .png, or .webp images.",
+                "Hit @|fg(yellow) <TAB>|@ to see available commands",
+                "Hit @|fg(yellow) ALT+S|@ to toggle tailtips",
+                "" }, footer = { "@|fg(240) Use|@ @|fg(yellow) \"\"\"|@ @|fg(240) to begin a multi-line message.|@",
+                                "@|fg(240) Use|@ @|fg(yellow),italic /path/to/file|@ @|fg(240) to include|@ @|fg(240),bold .jpg, .png,|@ @|fg(240) or|@ @|fg(240),bold .webp|@ @|fg(240) images.|@",
                 })
 public class ChatSubCommand implements Runnable {
         final PrintWriter out;
@@ -29,6 +29,7 @@ public class ChatSubCommand implements Runnable {
                 this.out = terminal.writer();
         }
 
+        @Override
         public void run() {
                 out.println(spec.commandLine().getUsageMessage());
         }
@@ -40,6 +41,7 @@ public class ChatSubCommand implements Runnable {
                 @Spec
                 private CommandLine.Model.CommandSpec spec;
 
+                @Override
                 public void run() {
                         parent.out.println("/set command executed.");
                 }
@@ -51,6 +53,7 @@ public class ChatSubCommand implements Runnable {
                 @ParentCommand
                 ChatSubCommand parent;
 
+                @Override
                 public void run() {
                         parent.out.println("/show command executed.");
                 }
@@ -61,8 +64,10 @@ public class ChatSubCommand implements Runnable {
                 @ParentCommand
                 ChatSubCommand parent;
 
+                @Override
                 public void run() {
-                        parent.out.println("/exit command executed.");
+                        parent.out.println("Goodbye!");
+                        parent.out.flush();
                 }
         }
 

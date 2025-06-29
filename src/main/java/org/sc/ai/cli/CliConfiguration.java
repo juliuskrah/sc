@@ -18,6 +18,7 @@ import org.sc.ai.cli.chat.ChatSubCommand;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.PathResource;
 
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
@@ -28,7 +29,10 @@ import picocli.shell.jline3.PicocliCommands;
  */
 @Configuration(proxyBeanMethods = false)
 public class CliConfiguration {
-    final Parser parser = new DefaultParser();
+    @Value("${sc.config.dir:}")
+    private PathResource configDirectory;
+    public static final String REGEX_COMMAND = "([/:]?[a-zA-Z]+[a-zA-Z0-9_-]*|[/?]|\\?|/\\?)";
+    final Parser parser = new DefaultParser().regexCommand(REGEX_COMMAND);
     final Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
 
     /**
@@ -39,8 +43,9 @@ public class CliConfiguration {
      * @throws IOException if an I/O error occurs
      */
     @Bean
-    Terminal terminal() throws IOException {
+    Terminal terminal(@Value("${spring.application.name}") String name) throws IOException {
         var terminal = TerminalBuilder.builder()
+                .name(name)
                 .system(true)
                 .build();
         terminal.handle(Terminal.Signal.INT, signal -> {
@@ -55,14 +60,19 @@ public class CliConfiguration {
     }
 
     @Bean
-    LineReader lineReader(Terminal terminal, SystemRegistry systemRegistry, @Value("${spring.application.name}") String appName) {
+    LineReader lineReader(Terminal terminal, SystemRegistry systemRegistry,
+            @Value("${spring.application.name}") String appName) throws IOException {
+        Path historyFile = Paths.get(configDirectory.getURI()).resolve("history");
         return LineReaderBuilder.builder()
                 .terminal(terminal)
                 .completer(systemRegistry.completer())
                 .parser(parser)
                 .option(LineReader.Option.AUTO_FRESH_LINE, true)
-                .option(LineReader.Option.HISTORY_BEEP, true)
-                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "type 'exit' to quit")
+                .option(LineReader.Option.HISTORY_BEEP, false)
+                .variable(LineReader.HISTORY_FILE, historyFile)
+                .variable(LineReader.HISTORY_SIZE, 100)
+                .variable(LineReader.HISTORY_FILE_SIZE, 2000)
+                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M> ")
                 .variable(LineReader.LIST_MAX, 50)
                 .appName(appName)
                 .build();

@@ -16,7 +16,7 @@ import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.PathResource;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -35,7 +35,7 @@ import org.yaml.snakeyaml.TypeDescription;
 public class ConfigService {
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ConfigService.class);
     @Value("${sc.config.dir:}")
-    private Resource configDirectory;
+    private PathResource configDirectory;
     private static final String CONFIG_FILE_NAME = "config";
 
     private Config loadYamlAsBean() {

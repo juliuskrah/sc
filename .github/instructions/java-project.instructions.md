@@ -14,3 +14,4 @@ description: This instruction file provides coding standards and preferences for
   where it makes sense e.g. `@Mock`, `@InjectMocks`. Annotations for Mockito are activated by
   `@ExtendWith(MockitoExtension.class)` on the test class, however when a test class is
   annotated with `@SpringBootTest`, the Mockito annotations are not processed hence should not be used. Use the Spring Boot test annotations such as `@MockitoBean`, `@MockitoSpyBean`, etc. in that case.
+- If no mockito annotations are used e.g. `@Mock`, `@Spy`, `@InjectMocks`, the test class should not be annotated with `@ExtendWith(MockitoExtension.class)`.

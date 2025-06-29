@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import org.jline.console.SystemRegistry;
@@ -13,6 +15,7 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
+import org.jline.reader.Widget;
 import org.jline.widget.TailTipWidgets;
 import org.jline.widget.Widgets;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
@@ -87,14 +90,14 @@ public class ChatCommand implements Runnable {
     public void run() {
         loadMessageFromStdInIfNeeded();
         var conversationId = UUID.randomUUID().toString();
-        
+
         if (message == null || message.isBlank()) {
             startInteractiveMode(conversationId);
         } else {
             streamModelResponse(message, conversationId, spec.commandLine().getOut());
         }
     }
-    
+
     private void loadMessageFromStdInIfNeeded() {
         if (message == null) {
             try {
@@ -104,11 +107,11 @@ public class ChatCommand implements Runnable {
             }
         }
     }
-    
+
     private void startInteractiveMode(String conversationId) {
         reader.getTerminal().flush();
         setupWidgetsAndKeyBindings();
-        
+
         while (true) {
             try {
                 if (!processUserInput(conversationId)) {
@@ -116,42 +119,61 @@ public class ChatCommand implements Runnable {
                 }
                 reader.getTerminal().flush();
             } catch (UserInterruptException _) {
-                // Ctrl-C pressed, ignore and continue
+                reader.getTerminal().writer().println("Use Ctrl + d or /bye to exit.");
+                reader.getTerminal().flush();
             } catch (EndOfFileException _) {
-                // Ctrl-D pressed, exit
+                // Ctrl-D pressed, exit gracefully
                 return;
             } catch (Exception e) {
                 systemRegistry.trace(e);
             }
         }
     }
-    
+
     private void setupWidgetsAndKeyBindings() {
+        final String INSERT_DATE = "insert-date";
+        Widget insertDateWidget = this::insertDateWidget;
+
         TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5,
                 TailTipWidgets.TipType.COMPLETER);
-        widgets.enable();
-        KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
-        keyMap.bind(new Reference(Widgets.TAILTIP_TOGGLE), KeyMap.alt("s"));
+        widgets.addWidget(INSERT_DATE, insertDateWidget);
+
+        KeyMap<Binding> keyMap = reader.getKeyMaps().get(LineReader.MAIN);
+        keyMap.bind(new Reference(INSERT_DATE), KeyMap.ctrl('Q'));
+        Binding currentBinding = keyMap.getBound(KeyMap.alt('S'));
+        if (currentBinding == null) {
+            keyMap.bind(new Reference(Widgets.TAILTIP_TOGGLE), KeyMap.alt('S'));
+        } else {
+            keyMap.bind(new Reference(Widgets.TAILTIP_TOGGLE), KeyMap.ctrl('S'));
+        }
     }
-    
+
+    boolean insertDateWidget() {
+        String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+        reader.getBuffer().write(date);
+        return true;
+    }
+
     private boolean processUserInput(String conversationId) throws Exception {
         systemRegistry.cleanUp();
         var line = reader.readLine(PROMPT).trim();
-        
+
         if (line.isBlank()) {
             return true;
         }
-        
-        if ("exit".equals(line) || "quit".equals(line)) {
-            return false;
-        }
-        
-        if (line.startsWith("/") || "help".equals(line)) {
+
+        if (line.startsWith("/")) {
+            // Handle custom exit commands before passing to SystemRegistry
+            if ("/bye".equals(line) || "/exit".equals(line) || "/quit".equals(line)) {
+                reader.getTerminal().writer().println("Goodbye!");
+                reader.getTerminal().flush();
+                return false;
+            }
             systemRegistry.execute(line);
         } else {
             streamModelResponse(line, conversationId, reader.getTerminal().writer());
         }
-        
+
         return true;
     }
 

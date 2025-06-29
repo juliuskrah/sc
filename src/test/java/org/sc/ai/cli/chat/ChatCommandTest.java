@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
 
+import org.jline.console.CommandRegistry;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.SystemRegistryImpl;
 import org.jline.reader.LineReader;
@@ -26,12 +27,16 @@ import org.jline.terminal.TerminalBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.sc.ai.cli.CliConfiguration;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 
 import picocli.CommandLine;
+import picocli.shell.jline3.PicocliCommands;
 import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,13 +53,23 @@ class ChatCommandTest {
     private StringWriter sw;
     private CommandLine cmd;
 
+    private CommandRegistry picocliCommands(Terminal terminal) {
+        var chatSubCommand = new ChatSubCommand(terminal);
+        var commandLine = new CommandLine(chatSubCommand);
+        commandLine.addSubcommand("/exit", new ChatSubCommand.ExitCommand());
+        return new PicocliCommands(commandLine);
+    }
+
     @BeforeEach
     void setUp() throws IOException {
         terminal = TerminalBuilder.terminal();
         sw = new StringWriter();
+        var picocliCommands = picocliCommands(terminal);
         PrintWriter pw = new PrintWriter(sw);
         Supplier<Path> workDir = () -> Paths.get(".");
-        SystemRegistry systemRegistry = new SystemRegistryImpl(new DefaultParser(), terminal, workDir, null);
+        SystemRegistry systemRegistry = new SystemRegistryImpl(new DefaultParser().regexCommand(CliConfiguration.REGEX_COMMAND), terminal, workDir, null);
+        systemRegistry.setCommandRegistries(picocliCommands);
+        systemRegistry.register("/?", picocliCommands);
         ChatCommand chatCommand = new ChatCommand(chatService, lineReader, ollamaChatProperties, systemRegistry);
         cmd = new CommandLine(chatCommand);
         cmd.setOut(pw);
@@ -82,7 +97,7 @@ class ChatCommandTest {
     @Test
     void shouldEnterReplMode_whenNoMessageGiven() {
         // Given
-        doReturn("What is the meaning of life?", "exit").when(lineReader).readLine(anyString());
+        doReturn("What is the meaning of life?", "/exit").when(lineReader).readLine(anyString());
         when(chatService.sendAndStreamMessage(any(), any(), any()))
                 .thenReturn(Flux.just("<ignored>"));
 
@@ -133,26 +148,14 @@ class ChatCommandTest {
         assertThat(exitCode).isZero();
     }
 
-    @Test
-    void shouldExitReplMode_whenExitCommandGiven() {
+    @ParameterizedTest
+    @ValueSource(strings = {"/bye", "/exit", "/quit"})
+    void shouldExitReplMode_whenExitCommandGiven(String exitCommand) {
         // Given
-        doReturn("exit").when(lineReader).readLine(anyString());
+        doReturn(exitCommand).when(lineReader).readLine(anyString());
 
         // When
         int exitCode = cmd.execute();
-
-        // Then
-        assertThat(exitCode).isZero();
-        verify(lineReader).readLine("sc> ");
-    }
-
-    @Test
-    void shouldExitReplMode_whenQuitCommandGiven() {
-        // Given
-        doReturn("quit").when(lineReader).readLine(anyString());
-
-        // When
-        int exitCode = cmd.execute(); // use spies
 
         // Then
         assertThat(exitCode).isZero();
