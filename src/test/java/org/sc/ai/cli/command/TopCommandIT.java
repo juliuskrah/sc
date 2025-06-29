@@ -43,7 +43,7 @@ class TopCommandIT {
 		// 1. Command Line option: `--base-url`
 		// 2. Config file located at /.sc/config: `ollama.base-url`
 		// 3. Default value: `http://localhost:11434`
-		var userDirConfig = "Config resource 'file [%s/.sc/config]' via location 'optional:file:%s/.sc/config[.yaml]'"
+		var userDirConfig = "Config resource 'file [%s/.sc/config]' via location 'optional:%s/.sc/config[.yaml]'"
 				.formatted(System.getProperty("user.dir"), System.getProperty("user.dir"));
 		var userHomeConfig = "Config resource 'file [%s/.sc/config]' via location 'optional:file:%s/.sc/config[.yaml]'"
 				.formatted(System.getProperty("user.home"), System.getProperty("user.home"));

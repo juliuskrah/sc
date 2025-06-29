@@ -316,17 +316,6 @@ Additional examples beyond what's auto-generated...
 include::{includedir}/sc.adoc[tag=picocli-generated-man-section-options]
 ```
 
-### Available Templates
-
-The following template files have been created and enhanced:
-
-- `sc.adoc` - Main command with getting started guide and workflows
-- `sc-chat.adoc` - Chat command with interactive mode examples
-- `sc-config.adoc` - Configuration management documentation
-- `sc-config-init.adoc` - Configuration initialization
-- `sc-rag.adoc` - RAG system with usage examples
-- `sc-help.adoc` - Help command documentation
-
 ### Template Features
 
 Each template includes:
@@ -337,21 +326,11 @@ Each template includes:
 - **Cross-references** to related commands and concepts
 - **Additional context** not available in code annotations alone
 
-## Available Documentation Files
-
-After running `generateDocs`, you'll find the following enhanced HTML files:
-- `sc.html` - Main command (with getting started guide and workflows)
-- `sc-chat.html` - Chat functionality (with interactive mode examples)  
-- `sc-config.html` - Configuration management (with hierarchy details)
-- `sc-config-init.html` - Configuration initialization
-- `sc-rag.html` - RAG system usage (with protocol and format details)
-- `sc-help.html` - Help system
-
 ## Configuration Schema
 
 The project includes a JSON Schema for configuration validation:
 - **Local**: `.sc/schema.json`
-- **Published**: `https://juliuskrah.com/sc/schemas/schema.json`
+- **Published**: [`https://juliuskrah.com/sc/schemas/schema.json`](https://juliuskrah.com/sc/schemas/schema.json)
 
 The schema is automatically included in the GitHub Pages deployment and can be used for:
 - IDE autocomplete and validation in configuration files
@@ -375,31 +354,3 @@ Available Gradle tasks for documentation:
 ```
 
 The build system automatically detects whether templates exist and uses them for enhanced output, or falls back to standard generation.
-
-## Template Management
-
-Templates are version-controlled and should be:
-
-- **Generated once**: Use `generateManpageTemplates` only to create initial templates
-- **Manually maintained**: Edit templates to add custom content and examples  
-- **Preserved**: The build system will not overwrite existing templates
-- **Enhanced incrementally**: Add new sections and examples as the CLI evolves
-
-The documentation is generated from both command-line interface annotations and enhanced template content, ensuring it stays accurate while providing rich contextual information.
-
-# GitHub Pages
-
-The project is configured to automatically deploy documentation to GitHub Pages when changes are pushed to the main branch. The GitHub Actions workflow:
-
-1. **Builds the documentation** using Gradle and picocli's ManPageGenerator
-2. **Converts AsciiDoc to HTML** using AsciiDoctor with modern styling
-3. **Creates an index page** with navigation to all command documentation
-4. **Deploys to GitHub Pages** using the official GitHub Actions
-
-## Accessing the Live Documentation
-
-Once deployed, the documentation will be available at:
-
-```
-https://juliuskrah.com/sc/
-```

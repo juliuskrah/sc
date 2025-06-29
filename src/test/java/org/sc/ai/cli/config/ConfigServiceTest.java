@@ -18,7 +18,7 @@ import org.sc.ai.cli.config.Config.ProviderType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.PathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -56,12 +56,12 @@ class ConfigServiceTest {
     }
 
     @Nested
-    @TestPropertySource(properties = "sc.config.dir=file:${java.io.tmpdir}/.config-test")
+    @TestPropertySource(properties = "sc.config.dir=${java.io.tmpdir}/.config-test")
     class ConfigInitAndOpsTest {
         @Autowired
         private ConfigService service;
         @Value("${sc.config.dir}")
-        private Resource configDirResource;
+        private PathResource configDirResource;
 
         private Path configDir;
 
