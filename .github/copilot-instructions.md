@@ -1,7 +1,3 @@
----
-applyTo: '**'
----
-
 sc CLI
 
 # General Instructions

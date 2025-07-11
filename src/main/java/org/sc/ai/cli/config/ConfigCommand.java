@@ -99,7 +99,7 @@ public class ConfigCommand implements Runnable {
         private Map<String, String> set;
         @Option(names = { "-g", "--get" }, paramLabel = "KEY", description = "Get a configuration value by key")
         private String get;
-        @Option(names = { "-u", "--unset" }, paramLabel = "KEY", description = "Unset a configuration properties")
+        @Option(names = { "-u", "--unset" }, paramLabel = "KEY", description = "Unset configuration properties")
         private List<String> unset;
     }
 }
