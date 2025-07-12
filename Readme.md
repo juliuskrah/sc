@@ -355,3 +355,15 @@ Available Gradle tasks for documentation:
 ```
 
 The build system automatically detects whether templates exist and uses them for enhanced output, or falls back to standard generation.
+
+## Releases
+
+Releases are handled by [JReleaser](https://jreleaser.org). A dedicated GitHub
+workflow builds the project and publishes archives for Linux, macOS and Windows
+on both `amd64` and `arm64` architectures. To trigger a release, push a tag
+starting with `v`:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```

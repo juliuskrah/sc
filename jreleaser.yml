@@ -1,0 +1,34 @@
+project:
+  name: sc
+  version: '{{projectVersion}}'
+  description: 'sc cli - simple ai for everyday people'
+  longDescription: |
+    sc is a command line interface that simplifies interactions with various LLM providers.
+  links:
+    homepage: https://github.com/simplecommerce-ai/sc
+
+release:
+  github:
+    owner: simplecommerce-ai
+    tagName: 'v{{projectVersion}}'
+    releaseName: 'v{{projectVersion}}'
+    skipTag: false
+    overwrite: true
+    changelog:
+      formatted: ALWAYS
+
+distributions:
+  sc:
+    type: JAVA_BINARY
+    artifacts:
+      - path: build/libs/sc-{{projectVersion}}-plain.jar
+    executable:
+      name: sc
+    tags:
+      - linux-x86_64
+      - linux-aarch_64
+      - osx-x86_64
+      - osx-aarch_64
+      - windows-x86_64
+      - windows-aarch_64
+

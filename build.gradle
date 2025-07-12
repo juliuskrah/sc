@@ -1,10 +1,11 @@
 plugins {
-	id 'java-library'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.graalvm.buildtools.native' version '0.10.6'
-	id 'org.asciidoctor.jvm.convert' version '4.0.3'
-	id 'org.openrewrite.rewrite' version '7.9.0'
+        id 'java-library'
+        id 'org.springframework.boot' version '3.5.3'
+        id 'io.spring.dependency-management' version '1.1.7'
+        id 'org.graalvm.buildtools.native' version '0.10.6'
+        id 'org.asciidoctor.jvm.convert' version '4.0.3'
+        id 'org.openrewrite.rewrite' version '7.9.0'
+        id 'org.jreleaser' version '1.11.0'
 }
 
 group = 'org.sc.ai'
@@ -230,4 +231,8 @@ task previewPackageMigration {
         println "Review the output above to see what changes would be made."
         println "Run './gradlew migratePackages' to apply the changes."
     }
+}
+
+jreleaser {
+    configFile = file('jreleaser.yml')
 }
