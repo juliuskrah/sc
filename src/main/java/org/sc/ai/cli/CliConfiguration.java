@@ -33,7 +33,7 @@ public class CliConfiguration {
     @Value("${sc.config.dir:}")
     private PathResource configDirectory;
     public static final String REGEX_COMMAND = "([/:]?[a-zA-Z]+[a-zA-Z0-9_-]*|[/?]|\\?|/\\?)";
-    final Parser parser = new DefaultParser().regexCommand(REGEX_COMMAND);
+    final Parser parser = new DefaultParser().regexCommand(REGEX_COMMAND).eofOnUnclosedQuote(true);
     final Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
 
     /**
@@ -74,7 +74,7 @@ public class CliConfiguration {
                 .variable(LineReader.HISTORY_FILE, historyFile)
                 .variable(LineReader.HISTORY_SIZE, 100)
                 .variable(LineReader.HISTORY_FILE_SIZE, 2000)
-                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%M> ")
+                .variable(LineReader.SECONDARY_PROMPT_PATTERN, "%{...%} ")
                 .variable(LineReader.LIST_MAX, 50)
                 .appName(appName)
                 .build();

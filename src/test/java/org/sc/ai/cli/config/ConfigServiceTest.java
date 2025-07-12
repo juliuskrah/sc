@@ -319,6 +319,30 @@ class ConfigServiceTest {
                     .contains("    url: jdbc:hsqldb:mem:testdb")
                     .doesNotContain("    username: sa");
         }
+
+        @Test
+        void loadYamlAsBean_parsesProviderOptions() throws Exception {
+            Path config = configDir.resolve("config");
+            Files.writeString(config, """
+                    provider: ollama
+                    providers:
+                      ollama:
+                        base-url: http://localhost:11433
+                        model: mistral-small3.1
+                        options:
+                          timeout: '30'
+                          gpu: 'true'
+                    """);
+
+            var method = ConfigService.class.getDeclaredMethod("loadYamlAsBean");
+            method.setAccessible(true);
+            Config cfg = (Config) method.invoke(service);
+            var settings = cfg.resolvedProviderConfig(ProviderType.OLLAMA);
+
+            assertThat(settings.options())
+                    .containsEntry("timeout", "30")
+                    .containsEntry("gpu", "true");
+        }
     }
 
 }
