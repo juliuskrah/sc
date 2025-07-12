@@ -20,6 +20,10 @@ java {
     }
 }
 
+tasks.withType(Test).configureEach {
+    jvmArgs += '--add-modules', 'ALL-MODULE-PATH'
+}
+
 repositories {
 	mavenCentral()
 }
