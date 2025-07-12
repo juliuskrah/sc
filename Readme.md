@@ -2,6 +2,42 @@
 
 `sc` is a cli application that makes it easy to interact with LLMs from multiple providers, including Ollama and OpenAI.
 
+## Installation
+
+### Download Pre-built Binaries
+
+Download the latest release for your platform from the [GitHub releases page](https://github.com/juliuskrah/sc/releases).
+
+Available platforms:
+- **Linux**: x86_64
+- **macOS**: x86_64 (Intel), aarch_64 (Apple Silicon)  
+- **Windows**: x86_64
+
+### Package Managers
+
+Coming soon:
+- Homebrew (macOS/Linux)
+- Scoop (Windows)
+- Chocolatey (Windows)
+
+### Build from Source
+
+Requires Java 22+ and GraalVM:
+
+```bash
+git clone https://github.com/juliuskrah/sc.git
+cd sc
+./gradlew nativeCompile
+```
+
+The binary will be available at `build/native/nativeCompile/sc` (or `sc.exe` on Windows).
+
+## Release Information
+
+This project uses automated releases with semantic versioning. See [RELEASE.md](RELEASE.md) for detailed information about the release process.
+
+Current release stage: **ALPHA** - The project is in active development.
+
 <details>
 <summary><strong>Table of Contents</strong></summary>
 

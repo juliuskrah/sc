@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Release stage (alpha, beta, rc, final)'
+        required: true
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+          - final
+      scope:
+        description: 'Version scope (auto, patch, minor, major)'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-native:
+    name: Build Native Images
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            platform: linux-x86_64
+          # macOS
+          - os: macos-13
+            platform: osx-x86_64
+          - os: macos-14
+            platform: osx-aarch_64
+          # Windows
+          - os: windows-latest
+            platform: windows-x86_64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '22'
+          distribution: 'graalvm'
+          components: 'native-image'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Native Image Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            build/native/agent-output
+            build/native-reachability-metadata
+          key: ${{ runner.os }}-native-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-native-
+
+      - name: Build Native Image
+        run: ./gradlew nativeCompile
+
+      - name: Upload Native Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-binary-${{ matrix.platform }}
+          path: |
+            build/native/nativeCompile/sc*
+          retention-days: 1
+
+  release:
+    name: Release
+    needs: build-native
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Organize Artifacts
+        run: |
+          mkdir -p build/native/nativeCompile
+          
+          # Copy Linux binary
+          if [ -d "artifacts/native-binary-linux-x86_64" ]; then
+            cp artifacts/native-binary-linux-x86_64/sc build/native/nativeCompile/sc-linux-x86_64
+          fi
+          
+          # Copy macOS binaries
+          if [ -d "artifacts/native-binary-osx-x86_64" ]; then
+            cp artifacts/native-binary-osx-x86_64/sc build/native/nativeCompile/sc-osx-x86_64
+          fi
+          if [ -d "artifacts/native-binary-osx-aarch_64" ]; then
+            cp artifacts/native-binary-osx-aarch_64/sc build/native/nativeCompile/sc-osx-aarch_64
+          fi
+          
+          # Copy Windows binary
+          if [ -d "artifacts/native-binary-windows-x86_64" ]; then
+            cp artifacts/native-binary-windows-x86_64/sc.exe build/native/nativeCompile/sc-windows-x86_64.exe
+          fi
+
+      - name: Create Release Tag (Manual)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          STAGE: ${{ github.event.inputs.stage }}
+          SCOPE: ${{ github.event.inputs.scope }}
+        run: |
+          ./gradlew createSemverTag -Psemver.stage=$STAGE -Psemver.scope=$SCOPE
+
+      - name: Build and Release
+        uses: jreleaser/release-action@v2
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload JReleaser Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-logs
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties

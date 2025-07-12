@@ -1,0 +1,19 @@
+project:
+  name: sc
+  description: 'sc cli - simple ai for everyday people'
+  authors:
+    - Julius Krah
+  license: Apache-2.0
+  stereotype: CLI
+
+signing:
+  active: NEVER
+
+release:
+  github:
+    overwrite: true
+    prerelease:
+      pattern: '.*-alpha.*'
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits

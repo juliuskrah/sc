@@ -5,11 +5,18 @@ plugins {
 	id 'org.graalvm.buildtools.native' version '0.10.6'
 	id 'org.asciidoctor.jvm.convert' version '4.0.3'
 	id 'org.openrewrite.rewrite' version '7.9.0'
+	id 'org.jreleaser' version '1.19.0'
+	id 'com.javiersc.semver' version '0.8.0'
 }
 
 group = 'org.sc.ai'
 version = '0.0.1-SNAPSHOT'
 description = 'sc cli - simple ai for everyday people'
+
+// Configure semver for alpha releases
+semver {
+    tagPrefix.set("v")
+}
 
 java {
 	toolchain {
@@ -58,12 +65,20 @@ dependencies {
     // OpenRewrite dependencies
     rewrite 'org.openrewrite:rewrite-java:8.56.0'
     rewrite 'org.openrewrite.recipe:rewrite-spring:6.9.0'
+    
+    // JGit dependency for JReleaser
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.11.0.202412182137-r'
 }
 
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
 	}
+}
+
+// JReleaser configuration
+jreleaser {
+    configFile = file('jreleaser.yml')
 }
 
 tasks.named('test') {
@@ -203,6 +218,57 @@ graalvmNative {
     }
     metadataRepository {
         enabled = true
+    }
+}
+
+// Release tasks
+task releaseAlpha {
+    group = "Release"
+    description = "Create an alpha release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=alpha', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseBeta {
+    group = "Release"
+    description = "Create a beta release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=beta', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseRC {
+    group = "Release"
+    description = "Create a release candidate"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=rc', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseFinal {
+    group = "Release"
+    description = "Create a final release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=final', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task jreleaserFullReleaseLocal {
+    group = "JReleaser"
+    description = "Run JReleaser full release with dry-run for testing"
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserFullRelease', '--dry-run'
+        }
     }
 }
 
