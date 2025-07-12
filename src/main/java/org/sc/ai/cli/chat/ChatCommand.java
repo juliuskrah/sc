@@ -23,7 +23,6 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
-import org.sc.ai.cli.chat.StreamingContext;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;
@@ -73,23 +72,33 @@ public class ChatCommand implements Runnable {
     private void streamModelResponse(String userMessage, String conversationId, PrintWriter writer) {
         model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
         logger.debug("LLM model: {}", model);
+        
+        // Start spinner to indicate processing (delayed start)
+        var spinner = new Spinner(writer, "Thinking...");
+        spinner.start();
+        
         var streamingResponse = chatService.sendAndStreamMessage(userMessage, model, conversationId);
         var latch = new CountDownLatch(1);
+        
         var disposable = streamingResponse.subscribe(chunk -> {
+            spinner.stop();
             writer.print(Ansi.AUTO.string(chunk));
             writer.flush();
         }, error -> {
+            spinner.stop();
             logger.error("Error streaming response", error);
             writer.println();
             latch.countDown();
         }, () -> {
+            spinner.stop();
             writer.println();
             latch.countDown();
         });
         streamingContext.register(disposable, latch);
         try {
             latch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
+            spinner.stop();
             Thread.currentThread().interrupt();
         } finally {
             streamingContext.clear();

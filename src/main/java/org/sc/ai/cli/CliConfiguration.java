@@ -49,7 +49,7 @@ public class CliConfiguration {
                 .name(name)
                 .system(true)
                 .build();
-        terminal.handle(Terminal.Signal.INT, signal -> {
+        terminal.handle(Terminal.Signal.INT, _ -> {
             streamingContext.cancel();
             terminal.writer().println("Generation cancelled.");
             terminal.flush();
