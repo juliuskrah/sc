@@ -32,7 +32,7 @@ assemble:
       applicationPackage:
         appName: sc
         vendor: Julius Krah
-        copyright: 'Copyright 2024 Julius Krah'
+        copyright: 'Copyright 2025 Julius Krah'
         appVersion: '{{projectVersion}}'
       
       launcher:
@@ -68,3 +68,11 @@ assemble:
         groupId: org.sc.ai
         artifactId: sc
         version: '22'
+
+distributions:
+  sc:
+    type: NATIVE_PACKAGE
+    active: ALWAYS
+    artifacts:
+      - path: 'build/jpackage/{{distributionArtifactFile}}'
+        transform: 'artifacts/sc_v{{projectVersion}}_{{distributionPlatform}}_{{distributionArch}}.{{distributionArtifactExtension}}'

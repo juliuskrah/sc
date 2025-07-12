@@ -118,22 +118,37 @@ jobs:
         run: |
           mkdir -p build/installers
           
-          # Copy installers to release directory
+          # Get version from tag or create one
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
+          fi
+          
+          # Rename and copy installers to follow sc_v<version>_<platform>_<arch>.<ext> format
           if [ -d "artifacts/installer-linux-x86_64" ]; then
-            cp -r artifacts/installer-linux-x86_64/* build/installers/ || true
+            find artifacts/installer-linux-x86_64 -name "*.deb" -exec cp {} build/installers/sc_v${VERSION}_linux_x64.deb \; || true
+            find artifacts/installer-linux-x86_64 -name "*.rpm" -exec cp {} build/installers/sc_v${VERSION}_linux_x64.rpm \; || true
           fi
           
           if [ -d "artifacts/installer-osx-x86_64" ]; then
-            cp -r artifacts/installer-osx-x86_64/* build/installers/ || true
+            find artifacts/installer-osx-x86_64 -name "*.pkg" -exec cp {} build/installers/sc_v${VERSION}_macos_x64.pkg \; || true
+            find artifacts/installer-osx-x86_64 -name "*.dmg" -exec cp {} build/installers/sc_v${VERSION}_macos_x64.dmg \; || true
           fi
           
           if [ -d "artifacts/installer-osx-aarch_64" ]; then
-            cp -r artifacts/installer-osx-aarch_64/* build/installers/ || true
+            find artifacts/installer-osx-aarch_64 -name "*.pkg" -exec cp {} build/installers/sc_v${VERSION}_macos_arm64.pkg \; || true
+            find artifacts/installer-osx-aarch_64 -name "*.dmg" -exec cp {} build/installers/sc_v${VERSION}_macos_arm64.dmg \; || true
           fi
           
           if [ -d "artifacts/installer-windows-x86_64" ]; then
-            cp -r artifacts/installer-windows-x86_64/* build/installers/ || true
+            find artifacts/installer-windows-x86_64 -name "*.msi" -exec cp {} build/installers/sc_v${VERSION}_windows_x64.msi \; || true
+            find artifacts/installer-windows-x86_64 -name "*.exe" -exec cp {} build/installers/sc_v${VERSION}_windows_x64.exe \; || true
           fi
+          
+          # List final artifacts
+          echo "Release artifacts:"
+          ls -la build/installers/
 
       - name: Create Release Tag (Manual)
         if: github.event_name == 'workflow_dispatch'
