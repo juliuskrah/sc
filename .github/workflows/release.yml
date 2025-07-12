@@ -78,14 +78,14 @@ jobs:
         run: ./gradlew extractJar
 
       - name: Build JPackage Installer
-        run: ./gradlew jreleaserAssemble
+        run: ./gradlew buildJPackageInstaller
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: installer-${{ matrix.platform }}
           path: |
-            build/jreleaser/assemble/sc/jpackage/**/*
+            build/jpackage/**/*
           retention-days: 1
 
   release:
@@ -116,23 +116,23 @@ jobs:
 
       - name: Organize Artifacts
         run: |
-          mkdir -p build/jreleaser/assemble/sc/jpackage
+          mkdir -p build/installers
           
-          # Copy installers to expected location
+          # Copy installers to release directory
           if [ -d "artifacts/installer-linux-x86_64" ]; then
-            cp -r artifacts/installer-linux-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
+            cp -r artifacts/installer-linux-x86_64/* build/installers/ || true
           fi
           
           if [ -d "artifacts/installer-osx-x86_64" ]; then
-            cp -r artifacts/installer-osx-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
+            cp -r artifacts/installer-osx-x86_64/* build/installers/ || true
           fi
           
           if [ -d "artifacts/installer-osx-aarch_64" ]; then
-            cp -r artifacts/installer-osx-aarch_64/* build/jreleaser/assemble/sc/jpackage/ || true
+            cp -r artifacts/installer-osx-aarch_64/* build/installers/ || true
           fi
           
           if [ -d "artifacts/installer-windows-x86_64" ]; then
-            cp -r artifacts/installer-windows-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
+            cp -r artifacts/installer-windows-x86_64/* build/installers/ || true
           fi
 
       - name: Create Release Tag (Manual)
@@ -143,16 +143,20 @@ jobs:
         run: |
           ./gradlew createSemverTag -Psemver.stage=$STAGE -Psemver.scope=$SCOPE
 
-      - name: Build and Release
-        uses: jreleaser/release-action@v2
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/installers/*
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
         env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload JReleaser Logs
+      - name: Upload Build Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jreleaser-logs
+          name: build-logs
           path: |
-            out/jreleaser/trace.log
-            out/jreleaser/output.properties
+            build/reports/**/*

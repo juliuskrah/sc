@@ -5,7 +5,7 @@ plugins {
 	id 'org.graalvm.buildtools.native' version '0.10.6'
 	id 'org.asciidoctor.jvm.convert' version '4.0.3'
 	id 'org.openrewrite.rewrite' version '7.9.0'
-	id 'org.jreleaser' version '1.18.0'
+	id 'org.jreleaser' version '1.12.0'
 	id 'com.javiersc.semver' version '0.8.0'
 }
 
@@ -38,6 +38,13 @@ ext {
 
 configurations {
     generateConfig
+    
+    // Force compatible JGit version for JReleaser
+    all {
+        resolutionStrategy {
+            force 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
+        }
+    }
 }
 
 dependencies {
@@ -302,6 +309,73 @@ task extractJar {
         
         logger.info("Extracted jar to: ${extractDir}")
         logger.info("Use extracted jar for jpackage: ${extractDir}/${jarFile.name}")
+    }
+}
+
+// Custom jpackage task to bypass JReleaser issues
+task buildJPackageInstaller(type: Exec) {
+    dependsOn bootJar
+    group = "Distribution"
+    description = "Build platform-specific installer using jpackage"
+    
+    doFirst {
+        def osName = System.getProperty("os.name").toLowerCase()
+        def isWindows = osName.contains("windows")
+        def isMac = osName.contains("mac")
+        def isLinux = osName.contains("linux")
+        
+        def outputDir = file("${buildDir}/jpackage")
+        outputDir.mkdirs()
+        
+        def jarDir = file("${buildDir}/libs")
+        def mainJar = file("${buildDir}/libs/${project.name}-${project.version}.jar")
+        
+        def versionString = project.version.toString()
+        // Convert semver to jpackage-compatible version (max 3 numbers)
+        def cleanVersion = versionString
+            .replace('-SNAPSHOT', '')
+            .replaceAll(/\+.*$/, '') // Remove build metadata
+            .replaceAll(/-.*$/, '') // Remove pre-release identifiers
+        // Ensure it has at most 3 components and starts with 1 (not 0)
+        def versionParts = cleanVersion.split('\\.')
+        if (versionParts[0] == '0') {
+            versionParts[0] = '1' // jpackage requires first component to be >= 1
+        }
+        def jpackageVersion = versionParts.take(3).join('.')
+        
+        def baseArgs = [
+            'jpackage',
+            '--input', jarDir.absolutePath,
+            '--name', 'sc',
+            '--main-jar', mainJar.name,
+            '--main-class', 'org.sc.ai.cli.Application',
+            '--dest', outputDir.absolutePath,
+            '--app-version', jpackageVersion,
+            '--vendor', 'Julius Krah',
+            '--description', 'sc cli - simple ai for everyday people',
+            '--copyright', 'Copyright 2025 Julius Krah',
+            '--java-options', '-Xmx2G',
+            '--java-options', '-Dspring.profiles.active=prod'
+        ]
+        
+        if (isWindows) {
+            commandLine baseArgs + [
+                '--type', 'msi',
+                '--win-dir-chooser',
+                '--win-menu',
+                '--win-shortcut'
+            ]
+        } else if (isMac) {
+            commandLine baseArgs + ['--type', 'pkg']
+        } else if (isLinux) {
+            commandLine baseArgs + [
+                '--type', 'deb',
+                '--linux-menu-group', 'Utility',
+                '--linux-shortcut'
+            ]
+        } else {
+            throw new GradleException("Unsupported operating system: ${osName}")
+        }
     }
 }
 
