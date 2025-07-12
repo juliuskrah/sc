@@ -12,9 +12,12 @@ version = '0.0.1-SNAPSHOT'
 description = 'sc cli - simple ai for everyday people'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(22)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(22)
+    }
+    modularity {
+        inferModulePath = true
+    }
 }
 
 repositories {
