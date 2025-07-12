@@ -65,9 +65,6 @@ dependencies {
     // OpenRewrite dependencies
     rewrite 'org.openrewrite:rewrite-java:8.56.0'
     rewrite 'org.openrewrite.recipe:rewrite-spring:6.9.0'
-    
-    // JGit dependency for JReleaser
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.11.0.202412182137-r'
 }
 
 dependencyManagement {
@@ -110,7 +107,7 @@ bootJar {
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
-    options.javaModuleVersion = provider { version }
+    options.javaModuleVersion = provider { project.version.toString() }
 }
 
 task generateManpageAsciiDoc(type: JavaExec) {
