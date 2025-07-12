@@ -43,9 +43,8 @@ dependencies {
 	api 'org.springframework.ai:spring-ai-markdown-document-reader'
 	api 'org.springframework.ai:spring-ai-jsoup-document-reader'
 	api "org.jline:jline:${jlineVersion}"
-	// Exclude conflicting JLine modules to avoid split package issues
-	// implementation "org.jline:jline-terminal-ffm:${jlineVersion}"
-	// implementation "org.jline:jline-terminal-jni:${jlineVersion}"
+	api "org.jline:jline-terminal-ffm:${jlineVersion}"
+	api "org.jline:jline-terminal-jni:${jlineVersion}"
     api "info.picocli:picocli-spring-boot-starter:${picocliVersion}"
 	api "info.picocli:picocli-shell-jline3:${picocliVersion}"
 	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
@@ -53,7 +52,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:ollama:1.21.0'
-    implementation 'org.awaitility:awaitility'
+    testImplementation 'org.awaitility:awaitility'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     
     // OpenRewrite dependencies
