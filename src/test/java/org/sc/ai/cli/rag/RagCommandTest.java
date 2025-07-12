@@ -1,9 +1,13 @@
 package org.sc.ai.cli.rag;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -64,7 +68,7 @@ class RagCommandTest {
     }
 
     @Test
-    void shouldAcceptOutputWithFileEtl() {
+    void shouldAcceptOutputWithFileEtl() throws IOException {
         var cmd = new CommandLine(ragCommand);
         var writer = new StringWriter();
         cmd.setErr(new PrintWriter(writer));
@@ -72,5 +76,6 @@ class RagCommandTest {
         int exitCode = cmd.execute("--etl=file", "--output=output.txt", "file:///test.txt");
         assertThat(writer.toString()).isEmpty();
         assertThat(exitCode).isZero();
+        verify(ragService).processToFile("file:///test.txt", Path.of("output.txt"));
     }
 }
