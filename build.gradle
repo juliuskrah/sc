@@ -336,12 +336,21 @@ task buildJPackageInstaller(type: Exec) {
         }
         def jpackageVersion = versionParts.take(3).join('.')
         
+        // Determine platform and architecture for naming
+        def platform = isWindows ? "windows" : (isMac ? "macos" : "linux")
+        def arch = System.getProperty("os.arch").toLowerCase()
+        if (arch.contains("amd64") || arch.contains("x86_64")) {
+            arch = "x64"
+        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+            arch = "arm64"
+        }
+        
         def baseArgs = [
             'jpackage',
             '--input', jarDir.absolutePath,
             '--name', 'sc',
             '--main-jar', mainJar.name,
-            '--main-class', 'org.sc.ai.cli.Application',
+            '--main-class', 'org.sc.ai.cli.ChatbotApplication',
             '--dest', outputDir.absolutePath,
             '--app-version', jpackageVersion,
             '--vendor', 'Julius Krah',
@@ -359,7 +368,9 @@ task buildJPackageInstaller(type: Exec) {
                 '--win-shortcut'
             ]
         } else if (isMac) {
-            commandLine baseArgs + ['--type', 'pkg']
+            commandLine baseArgs + [
+                '--type', 'pkg'
+            ]
         } else if (isLinux) {
             commandLine baseArgs + [
                 '--type', 'deb',
@@ -369,6 +380,42 @@ task buildJPackageInstaller(type: Exec) {
         } else {
             throw new GradleException("Unsupported operating system: ${osName}")
         }
+    }
+    
+    doLast {
+        // Rename the generated files to follow the naming convention
+        def osName = System.getProperty("os.name").toLowerCase()
+        def isWindows = osName.contains("windows")
+        def isMac = osName.contains("mac")
+        def isLinux = osName.contains("linux")
+        
+        def platform = isWindows ? "windows" : (isMac ? "macos" : "linux")
+        def arch = System.getProperty("os.arch").toLowerCase()
+        if (arch.contains("amd64") || arch.contains("x86_64")) {
+            arch = "x64"
+        } else if (arch.contains("aarch64") || arch.contains("arm64")) {
+            arch = "arm64"
+        }
+        
+        def outputDir = file("${buildDir}/jpackage")
+        def versionString = project.version.toString()
+        
+        // Find and rename generated files
+        outputDir.listFiles().each { file ->
+            if (file.isFile()) {
+                def extension = file.name.substring(file.name.lastIndexOf('.'))
+                def newName = "sc_v${versionString}_${platform}_${arch}${extension}"
+                def newFile = new File(outputDir, newName)
+                
+                if (file.renameTo(newFile)) {
+                    logger.info("Renamed ${file.name} to ${newName}")
+                } else {
+                    logger.warn("Failed to rename ${file.name} to ${newName}")
+                }
+            }
+        }
+        
+        logger.info("JPackage installer created in: ${outputDir}")
     }
 }
 
