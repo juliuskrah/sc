@@ -17,3 +17,9 @@ release:
     changelog:
       formatted: ALWAYS
       preset: conventional-commits
+
+files:
+  artifacts:
+    - path: 'build/native/nativeCompile/sc{{.exe}}'
+      extraProperties:
+        skipChecksum: 'true'
