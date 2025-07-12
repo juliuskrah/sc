@@ -39,7 +39,7 @@ This command allows you to chat with the Ollama API and other LLMs. You can use 
 
 * `-m, --model`: Specify the model to use for the chat. Currently only Ollama models are supported. The default is `mistral-small3.1`.
   > NOTE: The model should be available locally in the Ollama environment. You can list available models using the `ollama list` command.
-* `--base-url`: Ollama API endpoint. The default is http://localhost:11434".
+* `--base-url`: Ollama API endpoint. The default is http://localhost:11434.
 
 ### Parameters <a name="chat-parameters"></a>
 
