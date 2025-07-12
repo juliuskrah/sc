@@ -37,3 +37,16 @@ out/
 ### VS Code ###
 .vscode/
 !.vscode/mcp.json
+
+### JReleaser ###
+out/
+
+### Release artifacts ###
+*.zip
+*.tar.gz
+*.deb
+*.rpm
+*.dmg
+*.pkg
+*.msi
+*.exe.sig

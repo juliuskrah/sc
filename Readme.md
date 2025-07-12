@@ -2,6 +2,37 @@
 
 `sc` is a cli application that makes it easy to interact with LLMs from multiple providers, including Ollama and OpenAI.
 
+## Installation
+
+### Download Installers
+
+Download the latest release installer for your platform from the [GitHub releases page](https://github.com/juliuskrah/sc/releases).
+
+Available installers:
+- **Linux**: .deb (Debian/Ubuntu), .rpm (RedHat/Fedora/SUSE) packages for x86_64
+- **macOS**: .dmg, .pkg installers for x86_64 (Intel) and aarch_64 (Apple Silicon)  
+- **Windows**: .exe, .msi installers for x86_64
+
+### Package Managers
+
+Coming soon:
+- Homebrew (macOS/Linux)
+- Scoop (Windows)
+- Chocolatey (Windows)
+
+### Build from Source
+
+Requires Java 22+ (JDK 16+ for JPackage):
+
+```bash
+git clone https://github.com/juliuskrah/sc.git
+cd sc
+./gradlew clean bootJar
+./gradlew buildJPackageInstaller  
+```
+
+The installer will be available in `build/jpackage/`.
+
 <details>
 <summary><strong>Table of Contents</strong></summary>
 

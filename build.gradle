@@ -5,11 +5,18 @@ plugins {
 	id 'org.graalvm.buildtools.native' version '0.10.6'
 	id 'org.asciidoctor.jvm.convert' version '4.0.3'
 	id 'org.openrewrite.rewrite' version '7.9.0'
+	id 'org.jreleaser' version '1.19.0'
+	id 'com.javiersc.semver' version '0.8.0'
 }
 
 group = 'org.sc.ai'
 version = '0.0.1-SNAPSHOT'
 description = 'sc cli - simple ai for everyday people'
+
+// Configure semver for alpha releases
+semver {
+    tagPrefix.set("v")
+}
 
 java {
 	toolchain {
@@ -66,6 +73,11 @@ dependencyManagement {
 	}
 }
 
+// JReleaser configuration
+jreleaser {
+    configFile = file('jreleaser.yml')
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
@@ -91,11 +103,39 @@ bootJar {
     manifest {
         attributes('Automatic-Module-Name': 'org.sc.ai.cli')
     }
+    
+    // Enable layered jars for efficient packaging and Docker builds
+    layered {
+        enabled = true
+    }
+    
+    // Optimize for startup performance
+    archiveClassifier = ''
+    
+    // Enable efficient jar structure for jpackage
+    requiresUnpack '**/spring-*.jar'
+}
+
+// AOT (Ahead-of-Time) compilation for faster startup
+tasks.named("processAot") {
+    // Enable AOT processing for production builds
+    enabled = true
+}
+
+// Optimize Spring Boot for jpackage distribution
+tasks.named("bootJar") {
+    // Ensure AOT processing runs before bootJar
+    dependsOn "processAot"
+    
+    // Configure for optimal jpackage performance
+    doFirst {
+        logger.info("Building optimized JAR for jpackage distribution")
+    }
 }
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
-    options.javaModuleVersion = provider { version }
+    options.javaModuleVersion = provider { project.version.toString() }
 }
 
 task generateManpageAsciiDoc(type: JavaExec) {
@@ -203,6 +243,183 @@ graalvmNative {
     }
     metadataRepository {
         enabled = true
+    }
+}
+
+// JPackage tasks for local development
+task jpackageDeb {
+    group = "JPackage"
+    description = "Build optimized DEB package using jpackage"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
+task jpackageDmg {
+    group = "JPackage"
+    description = "Build optimized DMG package using jpackage (macOS only)"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
+task jpackageExe {
+    group = "JPackage"
+    description = "Build optimized EXE package using jpackage (Windows only)"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
+// Extract jar task for optimal jpackage performance
+task extractJar {
+    group = "JPackage"
+    description = "Extract executable jar for optimal jpackage performance"
+    dependsOn bootJar
+    
+    doLast {
+        def jarFile = bootJar.archiveFile.get().asFile
+        def extractDir = file("${buildDir}/extracted")
+        
+        // Clean extract directory
+        delete extractDir
+        mkdir extractDir
+        
+        // Extract using Spring Boot's built-in tool
+        exec {
+            workingDir extractDir
+            commandLine 'java', '-Djarmode=tools', '-jar', jarFile.absolutePath, 'extract'
+        }
+        
+        logger.info("Extracted jar to: ${extractDir}")
+        logger.info("Use extracted jar for jpackage: ${extractDir}/${jarFile.name}")
+    }
+}
+
+// Custom jpackage task to bypass JReleaser issues
+task buildJPackageInstaller(type: Exec) {
+    dependsOn bootJar
+    group = "Distribution"
+    description = "Build platform-specific installer using jpackage"
+    
+    doFirst {
+        def osName = System.getProperty("os.name").toLowerCase()
+        def isWindows = osName.contains("windows")
+        def isMac = osName.contains("mac")
+        def isLinux = osName.contains("linux")
+        
+        def outputDir = file("${buildDir}/jpackage")
+        outputDir.mkdirs()
+        
+        def jarDir = file("${buildDir}/libs")
+        def mainJar = file("${buildDir}/libs/${project.name}-${project.version}.jar")
+        
+        def versionString = project.version.toString()
+        // Convert semver to jpackage-compatible version (max 3 numbers)
+        def cleanVersion = versionString
+            .replace('-SNAPSHOT', '')
+            .replaceAll(/\+.*$/, '') // Remove build metadata
+            .replaceAll(/-.*$/, '') // Remove pre-release identifiers
+        // Ensure it has at most 3 components and starts with 1 (not 0)
+        def versionParts = cleanVersion.split('\\.')
+        if (versionParts[0] == '0') {
+            versionParts[0] = '1' // jpackage requires first component to be >= 1
+        }
+        def jpackageVersion = versionParts.take(3).join('.')
+        
+        def baseArgs = [
+            'jpackage',
+            '--input', jarDir.absolutePath,
+            '--name', 'sc',
+            '--main-jar', mainJar.name,
+            '--main-class', 'org.sc.ai.cli.Application',
+            '--dest', outputDir.absolutePath,
+            '--app-version', jpackageVersion,
+            '--vendor', 'Julius Krah',
+            '--description', 'sc cli - simple ai for everyday people',
+            '--copyright', 'Copyright 2025 Julius Krah',
+            '--java-options', '-Xmx2G',
+            '--java-options', '-Dspring.profiles.active=prod'
+        ]
+        
+        if (isWindows) {
+            commandLine baseArgs + [
+                '--type', 'msi',
+                '--win-dir-chooser',
+                '--win-menu',
+                '--win-shortcut'
+            ]
+        } else if (isMac) {
+            commandLine baseArgs + ['--type', 'pkg']
+        } else if (isLinux) {
+            commandLine baseArgs + [
+                '--type', 'deb',
+                '--linux-menu-group', 'Utility',
+                '--linux-shortcut'
+            ]
+        } else {
+            throw new GradleException("Unsupported operating system: ${osName}")
+        }
+    }
+}
+
+// Release tasks
+task releaseAlpha {
+    group = "Release"
+    description = "Create an alpha release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=alpha', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseBeta {
+    group = "Release"
+    description = "Create a beta release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=beta', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseRC {
+    group = "Release"
+    description = "Create a release candidate"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=rc', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task releaseFinal {
+    group = "Release"
+    description = "Create a final release"
+    doLast {
+        exec {
+            commandLine './gradlew', 'createSemverTag', '-Psemver.stage=final', '-Psemver.scope=auto'
+        }
+    }
+}
+
+task jreleaserFullReleaseLocal {
+    group = "JReleaser"
+    description = "Run JReleaser full release with dry-run for testing"
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserFullRelease', '--dry-run'
+        }
     }
 }
 

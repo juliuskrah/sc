@@ -1,0 +1,162 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Release stage (alpha, beta, rc, final)'
+        required: true
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+          - final
+      scope:
+        description: 'Version scope (auto, patch, minor, major)'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-packages:
+    name: Build JPackage Installers
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            platform: linux-x86_64
+          # macOS
+          - os: macos-13
+            platform: osx-x86_64
+          - os: macos-14
+            platform: osx-aarch_64
+          # Windows
+          - os: windows-latest
+            platform: windows-x86_64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Optimized JAR
+        run: ./gradlew bootJar
+
+      - name: Extract JAR for Optimal Performance
+        run: ./gradlew extractJar
+
+      - name: Build JPackage Installer
+        run: ./gradlew buildJPackageInstaller
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.platform }}
+          path: |
+            build/jpackage/**/*
+          retention-days: 1
+
+  release:
+    name: Release
+    needs: build-packages
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Organize Artifacts
+        run: |
+          mkdir -p build/installers
+          
+          # Copy installers to release directory
+          if [ -d "artifacts/installer-linux-x86_64" ]; then
+            cp -r artifacts/installer-linux-x86_64/* build/installers/ || true
+          fi
+          
+          if [ -d "artifacts/installer-osx-x86_64" ]; then
+            cp -r artifacts/installer-osx-x86_64/* build/installers/ || true
+          fi
+          
+          if [ -d "artifacts/installer-osx-aarch_64" ]; then
+            cp -r artifacts/installer-osx-aarch_64/* build/installers/ || true
+          fi
+          
+          if [ -d "artifacts/installer-windows-x86_64" ]; then
+            cp -r artifacts/installer-windows-x86_64/* build/installers/ || true
+          fi
+
+      - name: Create Release Tag (Manual)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          STAGE: ${{ github.event.inputs.stage }}
+          SCOPE: ${{ github.event.inputs.scope }}
+        run: |
+          ./gradlew createSemverTag -Psemver.stage=$STAGE -Psemver.scope=$SCOPE
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/installers/*
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Build Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build/reports/**/*
