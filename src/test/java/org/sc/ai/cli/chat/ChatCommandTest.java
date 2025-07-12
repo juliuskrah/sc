@@ -1,6 +1,7 @@
 package org.sc.ai.cli.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atMostOnce;
@@ -15,6 +16,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 import org.jline.console.CommandRegistry;
@@ -31,12 +35,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.sc.ai.cli.CliConfiguration;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
-import org.sc.ai.cli.chat.StreamingContext;
-
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
 import reactor.core.publisher.Flux;
@@ -167,8 +168,16 @@ class ChatCommandTest {
     }
 
     @Test
-    void shouldCancelStreaming_whenInterrupted() throws Exception {
+    void shouldCancelStreaming_whenInterrupted() throws InterruptedException{
         when(ollamaChatProperties.getModel()).thenReturn("llama2");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        var future = executor.submit(() -> {
+            try {
+                Thread.sleep(80);
+            } catch (InterruptedException _) {
+                Thread.currentThread().interrupt();
+            }
+        });
         Flux<String> flux = Flux.interval(java.time.Duration.ofMillis(50))
                 .map(i -> "chunk" + i)
                 .take(5);
@@ -176,11 +185,29 @@ class ChatCommandTest {
 
         Thread t = new Thread(() -> cmd.execute("hello"));
         t.start();
-        Thread.sleep(80); // wait for a couple chunks
+        await().atMost(Duration.ofMillis(150)).until(future::isDone);
         streamingContext.cancel();
         t.join(1000);
-
         assertThat(sw.toString()).startsWith("chunk0");
         assertThat(sw.toString()).doesNotContain("chunk4");
+    }
+
+    @Test
+    void shouldDisplaySpinner_whenWaitingForResponse() {
+        // Given
+        when(ollamaChatProperties.getModel()).thenReturn("llama2");
+        // Simulate a delayed response that will trigger the spinner
+        when(chatService.sendAndStreamMessage(any(), any(), any()))
+                .thenReturn(Flux.just("Response").delayElements(java.time.Duration.ofMillis(200)));
+
+        // When
+        int exitCode = cmd.execute("test message");
+
+        // Then
+        assertThat(exitCode).isZero();
+        String output = sw.toString();
+        // The spinner should have cleared itself and the response should be visible
+        assertThat(output).contains("Response");
+        verify(chatService).sendAndStreamMessage(anyString(), anyString(), anyString());
     }
 }

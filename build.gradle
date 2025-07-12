@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:ollama:1.21.0'
+    implementation 'org.awaitility:awaitility'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     
     // OpenRewrite dependencies
