@@ -78,15 +78,12 @@ public class ConfigService {
                         baseUrl = URI.create(element.getValue().toString());
                     } else if ("model".equals(element.getKey())) {
                         model = element.getValue().toString();
-                    } else if ("options".equals(element.getKey())) {
-                        Object val = element.getValue();
-                        if (val instanceof Map<?, ?> optMap) {
-                            for (var optEntry : optMap.entrySet()) {
-                                var optKey = optEntry.getKey();
-                                var optVal = optEntry.getValue();
-                                if (optKey != null && optVal != null) {
-                                    options.put(optKey.toString(), optVal.toString());
-                                }
+                    } else if ("options".equals(element.getKey()) && element.getValue() instanceof Map<?, ?> optMap) {
+                        for (var optEntry : optMap.entrySet()) {
+                            var optKey = optEntry.getKey();
+                            var optVal = optEntry.getValue();
+                            if (optKey != null && optVal != null) {
+                                options.put(optKey.toString(), optVal.toString());
                             }
                         }
                     }
