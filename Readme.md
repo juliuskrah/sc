@@ -354,4 +354,11 @@ Available Gradle tasks for documentation:
 ./gradlew asciidoctor           # Convert AsciiDoc to HTML
 ```
 
+## Versioning
+
+This project uses the [Semver Gradle plugin](https://github.com/JavierSegoviaCordoba/semver)
+to determine the version from Git tags. The `semver` plugin computes the
+`project.version` dynamically, so each build reflects the current tag or
+snapshot suffix.
+
 The build system automatically detects whether templates exist and uses them for enhanced output, or falls back to standard generation.

@@ -1,15 +1,21 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.graalvm.buildtools.native' version '0.10.6'
-	id 'org.asciidoctor.jvm.convert' version '4.0.3'
-	id 'org.openrewrite.rewrite' version '7.9.0'
+        id 'java'
+        id 'org.springframework.boot' version '3.5.3'
+        id 'io.spring.dependency-management' version '1.1.7'
+        id 'org.graalvm.buildtools.native' version '0.10.6'
+        id 'org.asciidoctor.jvm.convert' version '4.0.3'
+        id 'org.openrewrite.rewrite' version '7.9.0'
+        id 'com.javiersc.semver' version '1.2.0'
 }
 
 group = 'org.sc.ai'
-version = '0.0.1-SNAPSHOT'
+version = semver.version
 description = 'sc cli - simple ai for everyday people'
+
+semver {
+    tagPrefix.set('')
+    snapshotSuffix.set('-SNAPSHOT')
+}
 
 java {
 	toolchain {
