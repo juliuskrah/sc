@@ -103,6 +103,34 @@ bootJar {
     manifest {
         attributes('Automatic-Module-Name': 'org.sc.ai.cli')
     }
+    
+    // Enable layered jars for efficient packaging and Docker builds
+    layered {
+        enabled = true
+    }
+    
+    // Optimize for startup performance
+    archiveClassifier = ''
+    
+    // Enable efficient jar structure for jpackage
+    requiresUnpack '**/spring-*.jar'
+}
+
+// AOT (Ahead-of-Time) compilation for faster startup
+tasks.named("processAot") {
+    // Enable AOT processing for production builds
+    enabled = true
+}
+
+// Optimize Spring Boot for jpackage distribution
+tasks.named("bootJar") {
+    // Ensure AOT processing runs before bootJar
+    dependsOn "processAot"
+    
+    // Configure for optimal jpackage performance
+    doFirst {
+        logger.info("Building optimized JAR for jpackage distribution")
+    }
 }
 
 compileJava {
@@ -221,7 +249,7 @@ graalvmNative {
 // JPackage tasks for local development
 task jpackageDeb {
     group = "JPackage"
-    description = "Build DEB package using jpackage"
+    description = "Build optimized DEB package using jpackage"
     dependsOn bootJar
     doLast {
         exec {
@@ -232,7 +260,7 @@ task jpackageDeb {
 
 task jpackageDmg {
     group = "JPackage"
-    description = "Build DMG package using jpackage (macOS only)"
+    description = "Build optimized DMG package using jpackage (macOS only)"
     dependsOn bootJar
     doLast {
         exec {
@@ -243,12 +271,37 @@ task jpackageDmg {
 
 task jpackageExe {
     group = "JPackage"
-    description = "Build EXE package using jpackage (Windows only)"
+    description = "Build optimized EXE package using jpackage (Windows only)"
     dependsOn bootJar
     doLast {
         exec {
             commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
         }
+    }
+}
+
+// Extract jar task for optimal jpackage performance
+task extractJar {
+    group = "JPackage"
+    description = "Extract executable jar for optimal jpackage performance"
+    dependsOn bootJar
+    
+    doLast {
+        def jarFile = bootJar.archiveFile.get().asFile
+        def extractDir = file("${buildDir}/extracted")
+        
+        // Clean extract directory
+        delete extractDir
+        mkdir extractDir
+        
+        // Extract using Spring Boot's built-in tool
+        exec {
+            workingDir extractDir
+            commandLine 'java', '-Djarmode=tools', '-jar', jarFile.absolutePath, 'extract'
+        }
+        
+        logger.info("Extracted jar to: ${extractDir}")
+        logger.info("Use extracted jar for jpackage: ${extractDir}/${jarFile.name}")
     }
 }
 

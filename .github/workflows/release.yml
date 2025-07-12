@@ -71,8 +71,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build JAR
+      - name: Build Optimized JAR
         run: ./gradlew bootJar
+
+      - name: Extract JAR for Optimal Performance
+        run: ./gradlew extractJar
 
       - name: Build JPackage Installer
         run: ./gradlew jreleaserAssemble

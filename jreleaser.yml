@@ -33,9 +33,11 @@ assemble:
         appName: sc
         vendor: Julius Krah
         copyright: 'Copyright 2024 Julius Krah'
+        appVersion: '{{projectVersion}}'
       
       launcher:
         arguments: ['--help']
+        javaOptions: ['-Xms128m', '-Xmx512m', '-XX:+UseG1GC', '-XX:+UseStringDeduplication']
       
       linux:
         types: [deb, rpm]
