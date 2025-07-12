@@ -1,4 +1,4 @@
-module org.sc.ai.cli {
+open module org.sc.ai.cli {
     requires spring.boot;
     requires spring.boot.autoconfigure;
     requires spring.context;
@@ -17,11 +17,6 @@ module org.sc.ai.cli {
     requires spring.ai.markdown.document.reader;
     requires spring.ai.jsoup.document.reader;
 
-    opens org.sc.ai.cli to spring.core, spring.beans, spring.context;
-    opens org.sc.ai.cli.chat to spring.core, spring.beans, spring.context;
-    opens org.sc.ai.cli.config to spring.core, spring.beans, spring.context;
-    opens org.sc.ai.cli.rag to spring.core, spring.beans, spring.context;
-    opens org.sc.ai.cli.command to spring.core, spring.beans, spring.context;
 
     exports org.sc.ai.cli;
     exports org.sc.ai.cli.chat;
