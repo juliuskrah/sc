@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,8 +49,7 @@ class ChatCommandTest {
     @Mock
     private OllamaChatProperties ollamaChatProperties;
     Terminal terminal;
-    @Spy
-    LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
+    LineReader lineReader;
 
     private StringWriter sw;
     private CommandLine cmd;
@@ -65,6 +65,7 @@ class ChatCommandTest {
     @BeforeEach
     void setUp() throws IOException {
         terminal = TerminalBuilder.terminal();
+        lineReader = spy(LineReaderBuilder.builder().terminal(terminal).build());
         sw = new StringWriter();
         var picocliCommands = picocliCommands(terminal);
         PrintWriter pw = new PrintWriter(sw);

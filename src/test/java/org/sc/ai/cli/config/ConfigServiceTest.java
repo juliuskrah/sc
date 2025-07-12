@@ -135,7 +135,7 @@ class ConfigServiceTest {
 
         @Test
         void get_withDottedKeyNotation() throws IOException {
-            // Create a test markdown file
+            // Create a YAML configuration file
             Path config = configDir.resolve("config");
             Files.writeString(config, """
                     provider: ollama
@@ -173,7 +173,7 @@ class ConfigServiceTest {
 
         @Test
         void set_mutuallyExclusiveValues() throws IOException {
-            // Create a test markdown file
+            // Create a YAML configuration file
             Path config = configDir.resolve("config");
             Files.writeString(config, """
                     provider: ollama

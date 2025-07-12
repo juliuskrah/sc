@@ -168,7 +168,7 @@ The following document formats are supported:
 ```bash
 # Load a PDF document from the local filesystem and write the response to a file
 sc rag --etl=file --output output.txt file:///path/to/document.pdf
-# Load a HTM document from a remote URL and write the response to a file
+# Load a HTML document from a remote URL and write the response to a file
 sc rag --etl=file --output output.txt https://docs.spring.io/spring-ai/reference/api/etl-pipeline.html
 # Load a plain text document from a local file and write the response to a file
 sc rag --etl=file --output output.txt file:///path/to/plain.txt
