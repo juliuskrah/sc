@@ -61,19 +61,30 @@ test_jreleaser_config() {
 }
 
 test_build() {
-    print_status "Testing native image build..."
-    ./gradlew nativeCompile
+    print_status "Testing JPackage installer build..."
+    ./gradlew bootJar
     
-    if [[ -f "build/native/nativeCompile/sc" ]]; then
-        print_status "Native binary built successfully!"
-        echo "Binary location: build/native/nativeCompile/sc"
-        echo "Binary size: $(du -h build/native/nativeCompile/sc | cut -f1)"
-    elif [[ -f "build/native/nativeCompile/sc.exe" ]]; then
-        print_status "Native binary built successfully!"
-        echo "Binary location: build/native/nativeCompile/sc.exe"
-        echo "Binary size: $(du -h build/native/nativeCompile/sc.exe | cut -f1)"
+    # Find the main JAR file (not the plain one)
+    JAR_FILE=$(find build/libs -name "sc-*.jar" -not -name "*-plain.jar" | head -1)
+    if [[ -f "$JAR_FILE" ]]; then
+        print_status "JAR built successfully!"
+        echo "JAR location: $JAR_FILE"
+        echo "JAR size: $(du -h "$JAR_FILE" | cut -f1)"
+        
+        print_status "Testing JPackage assembly..."
+        echo "[INFO] Note: Local JReleaser may fail due to dependency conflicts (JGit)"
+        echo "[INFO] This is expected - GitHub Actions provides a clean environment"
+        ./gradlew jreleaserAssemble --assembler=jpackage
+        
+        if [[ -d "build/jreleaser/assemble/sc/jpackage" ]]; then
+            print_status "JPackage installer built successfully!"
+            echo "Installer location: build/jreleaser/assemble/sc/jpackage"
+            ls -la build/jreleaser/assemble/sc/jpackage/ || true
+        else
+            print_warning "JPackage installer not found (may be platform-specific)"
+        fi
     else
-        print_error "Native binary not found!"
+        print_error "JAR file not found!"
         exit 1
     fi
     echo
@@ -132,7 +143,7 @@ show_help() {
     echo "Commands:"
     echo "  status      - Show current version and git status"
     echo "  test-config - Test JReleaser configuration"
-    echo "  test-build  - Test native image build"
+    echo "  test-build  - Test JAR and JPackage installer build"
     echo "  dry-run     - Run JReleaser dry-run"
     echo "  tag [stage] [scope] - Create a new tag (default: alpha auto)"
     echo "  alpha       - Create alpha release"

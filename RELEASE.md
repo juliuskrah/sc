@@ -1,20 +1,20 @@
 # Release and Tagging Process
 
-This document describes the automated release process for the `sc` CLI project, which builds native images for multiple platforms and publishes them via GitHub releases.
+This document describes the automated release process for the `sc` CLI project, which builds platform-specific installers using JPackage and publishes them via GitHub releases.
 
 ## Overview
 
 The project uses:
 - **Semver Gradle Plugin** for semantic versioning and git tag management
 - **JReleaser** for automated releases and distribution
-- **GitHub Actions** for CI/CD and multi-platform native image building
-- **GraalVM Native Image** for creating standalone executables
+- **GitHub Actions** for CI/CD and multi-platform installer building
+- **JPackage** for creating platform-specific installers (.deb, .rpm, .dmg, .pkg, .exe, .msi)
 
 ## Supported Platforms
 
-- **Linux**: x86_64
-- **macOS**: x86_64 (Intel), aarch_64 (Apple Silicon)
-- **Windows**: x86_64
+- **Linux**: DEB and RPM packages (x86_64)
+- **macOS**: DMG and PKG installers (x86_64 Intel, aarch_64 Apple Silicon)  
+- **Windows**: EXE and MSI installers (x86_64)
 
 ## Release Types
 
@@ -89,28 +89,34 @@ git push origin v0.1.0-alpha.1
 ./gradlew version --quiet
 ```
 
-### Building Native Images Locally
+### Building Installers Locally
 
 ```bash
-# Build native image for current platform
-./gradlew nativeCompile
+# Build JAR first
+./gradlew bootJar
 
-# The binary will be in: build/native/nativeCompile/sc
+# Build platform-specific installer
+./gradlew jreleaserAssemble --assembler=jpackage
+
+# The installer will be in: build/jreleaser/assemble/sc/jpackage/
 ```
 
 ## Release Workflow Details
 
 ### 1. Build Phase
-- Builds native images on Linux, macOS (Intel), macOS (Apple Silicon), and Windows
-- Uses GraalVM with native-image compilation
+- Builds JAR files on all platforms
+- Uses JPackage to create platform-specific installers
+- Linux: .deb and .rpm packages
+- macOS: .dmg and .pkg installers  
+- Windows: .exe and .msi installers
 - Caches build artifacts for faster subsequent builds
 
 ### 2. Release Phase
-- Downloads artifacts from all platform builds
+- Downloads installer artifacts from all platform builds
 - Creates appropriate git tags using semver plugin
 - Runs JReleaser to:
   - Create GitHub release
-  - Upload native binaries
+  - Upload installer packages
   - Generate changelog
   - Configure package managers (Homebrew, Scoop, Chocolatey)
 
@@ -141,12 +147,12 @@ Required for GitHub Actions:
 ### Common Issues
 
 1. **Build failures on specific platforms**
-   - Check the native image build logs
-   - Verify GraalVM version compatibility
+   - Check the JPackage build logs
+   - Verify Java version compatibility (requires JDK 16+)
 
 2. **JReleaser configuration errors**
    - Run `./gradlew jreleaserConfig` to validate
-   - Check artifact paths match build outputs
+   - Check JAR file paths match build outputs
 
 3. **Version conflicts**
    - Ensure git tags follow semver format
@@ -163,6 +169,9 @@ Required for GitHub Actions:
 
 # Show semver information
 ./gradlew printSemver
+
+# Test JPackage assembly
+./gradlew jreleaserAssemble --assembler=jpackage
 
 # Check git status and tags
 git tag -l

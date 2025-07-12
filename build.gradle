@@ -218,6 +218,40 @@ graalvmNative {
     }
 }
 
+// JPackage tasks for local development
+task jpackageDeb {
+    group = "JPackage"
+    description = "Build DEB package using jpackage"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
+task jpackageDmg {
+    group = "JPackage"
+    description = "Build DMG package using jpackage (macOS only)"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
+task jpackageExe {
+    group = "JPackage"
+    description = "Build EXE package using jpackage (Windows only)"
+    dependsOn bootJar
+    doLast {
+        exec {
+            commandLine './gradlew', 'jreleaserAssemble', '--assembler=jpackage'
+        }
+    }
+}
+
 // Release tasks
 task releaseAlpha {
     group = "Release"

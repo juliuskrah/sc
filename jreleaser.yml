@@ -1,10 +1,12 @@
 project:
   name: sc
   description: 'sc cli - simple ai for everyday people'
+  longDescription: 'A simple AI CLI tool for everyday people, built with Spring AI and JPackage'
   authors:
     - Julius Krah
   license: Apache-2.0
   stereotype: CLI
+  vendor: Julius Krah
 
 signing:
   active: NEVER
@@ -18,8 +20,49 @@ release:
       formatted: ALWAYS
       preset: conventional-commits
 
-files:
-  artifacts:
-    - path: 'build/native/nativeCompile/sc{{.exe}}'
-      extraProperties:
-        skipChecksum: 'true'
+assemble:
+  jpackage:
+    sc:
+      active: ALWAYS
+      exported: true
+      stereotype: CLI
+      attachPlatform: true
+      verbose: true
+      
+      applicationPackage:
+        appName: sc
+        vendor: Julius Krah
+        copyright: 'Copyright 2024 Julius Krah'
+      
+      launcher:
+        arguments: ['--help']
+      
+      linux:
+        types: [deb, rpm]
+        packageName: sc-cli
+        maintainer: Julius Krah
+        menuGroup: Development
+        license: Apache-2.0
+        appCategory: devel
+        shortcut: true
+      
+      osx:
+        types: [dmg, pkg]
+        packageName: sc
+        packageIdentifier: org.sc.ai.cli
+      
+      windows:
+        types: [exe, msi]
+        console: true
+        menu: true
+        shortcut: true
+        menuGroup: Development
+      
+      mainJar:
+        path: 'build/libs/sc-{{projectVersion}}.jar'
+      
+      java:
+        mainClass: org.sc.ai.cli.ChatbotApplication
+        groupId: org.sc.ai
+        artifactId: sc
+        version: '22'

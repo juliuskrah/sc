@@ -4,14 +4,14 @@
 
 ## Installation
 
-### Download Pre-built Binaries
+### Download Installers
 
-Download the latest release for your platform from the [GitHub releases page](https://github.com/juliuskrah/sc/releases).
+Download the latest release installer for your platform from the [GitHub releases page](https://github.com/juliuskrah/sc/releases).
 
-Available platforms:
-- **Linux**: x86_64
-- **macOS**: x86_64 (Intel), aarch_64 (Apple Silicon)  
-- **Windows**: x86_64
+Available installers:
+- **Linux**: .deb (Debian/Ubuntu), .rpm (RedHat/Fedora/SUSE) packages for x86_64
+- **macOS**: .dmg, .pkg installers for x86_64 (Intel) and aarch_64 (Apple Silicon)  
+- **Windows**: .exe, .msi installers for x86_64
 
 ### Package Managers
 
@@ -22,15 +22,16 @@ Coming soon:
 
 ### Build from Source
 
-Requires Java 22+ and GraalVM:
+Requires Java 22+ (JDK 16+ for JPackage):
 
 ```bash
 git clone https://github.com/juliuskrah/sc.git
 cd sc
-./gradlew nativeCompile
+./gradlew bootJar
+./gradlew jreleaserAssemble --assembler=jpackage
 ```
 
-The binary will be available at `build/native/nativeCompile/sc` (or `sc.exe` on Windows).
+The installer will be available in `build/jreleaser/assemble/sc/jpackage/`.
 
 ## Release Information
 

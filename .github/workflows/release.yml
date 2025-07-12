@@ -28,8 +28,8 @@ on:
       - 'v*'
 
 jobs:
-  build-native:
-    name: Build Native Images
+  build-packages:
+    name: Build JPackage Installers
     strategy:
       matrix:
         include:
@@ -52,41 +52,42 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           java-version: '22'
-          distribution: 'graalvm'
-          components: 'native-image'
+          distribution: 'zulu'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Cache Native Image Build
+      - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
-            build/native/agent-output
-            build/native-reachability-metadata
-          key: ${{ runner.os }}-native-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
-            ${{ runner.os }}-native-
+            ${{ runner.os }}-gradle-
 
-      - name: Build Native Image
-        run: ./gradlew nativeCompile
+      - name: Build JAR
+        run: ./gradlew bootJar
 
-      - name: Upload Native Binary
+      - name: Build JPackage Installer
+        run: ./gradlew jreleaserAssemble
+
+      - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: native-binary-${{ matrix.platform }}
+          name: installer-${{ matrix.platform }}
           path: |
-            build/native/nativeCompile/sc*
+            build/jreleaser/assemble/sc/jpackage/**/*
           retention-days: 1
 
   release:
     name: Release
-    needs: build-native
+    needs: build-packages
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
 
@@ -112,24 +113,23 @@ jobs:
 
       - name: Organize Artifacts
         run: |
-          mkdir -p build/native/nativeCompile
+          mkdir -p build/jreleaser/assemble/sc/jpackage
           
-          # Copy Linux binary
-          if [ -d "artifacts/native-binary-linux-x86_64" ]; then
-            cp artifacts/native-binary-linux-x86_64/sc build/native/nativeCompile/sc-linux-x86_64
+          # Copy installers to expected location
+          if [ -d "artifacts/installer-linux-x86_64" ]; then
+            cp -r artifacts/installer-linux-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
           fi
           
-          # Copy macOS binaries
-          if [ -d "artifacts/native-binary-osx-x86_64" ]; then
-            cp artifacts/native-binary-osx-x86_64/sc build/native/nativeCompile/sc-osx-x86_64
-          fi
-          if [ -d "artifacts/native-binary-osx-aarch_64" ]; then
-            cp artifacts/native-binary-osx-aarch_64/sc build/native/nativeCompile/sc-osx-aarch_64
+          if [ -d "artifacts/installer-osx-x86_64" ]; then
+            cp -r artifacts/installer-osx-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
           fi
           
-          # Copy Windows binary
-          if [ -d "artifacts/native-binary-windows-x86_64" ]; then
-            cp artifacts/native-binary-windows-x86_64/sc.exe build/native/nativeCompile/sc-windows-x86_64.exe
+          if [ -d "artifacts/installer-osx-aarch_64" ]; then
+            cp -r artifacts/installer-osx-aarch_64/* build/jreleaser/assemble/sc/jpackage/ || true
+          fi
+          
+          if [ -d "artifacts/installer-windows-x86_64" ]; then
+            cp -r artifacts/installer-windows-x86_64/* build/jreleaser/assemble/sc/jpackage/ || true
           fi
 
       - name: Create Release Tag (Manual)
