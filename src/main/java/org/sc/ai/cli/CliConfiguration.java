@@ -15,6 +15,7 @@ import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.sc.ai.cli.chat.ChatSubCommand;
+import org.sc.ai.cli.chat.StreamingContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,13 +44,14 @@ public class CliConfiguration {
      * @throws IOException if an I/O error occurs
      */
     @Bean
-    Terminal terminal(@Value("${spring.application.name}") String name) throws IOException {
+    Terminal terminal(@Value("${spring.application.name}") String name, StreamingContext streamingContext) throws IOException {
         var terminal = TerminalBuilder.builder()
                 .name(name)
                 .system(true)
                 .build();
         terminal.handle(Terminal.Signal.INT, signal -> {
-            terminal.writer().println("Received SIG" + signal + " (CTR+C)");
+            streamingContext.cancel();
+            terminal.writer().println("Generation cancelled.");
             terminal.flush();
         });
         terminal.handle(Terminal.Signal.TSTP, signal -> {

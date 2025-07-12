@@ -34,6 +34,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.sc.ai.cli.CliConfiguration;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
+import org.sc.ai.cli.chat.StreamingContext;
 
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
@@ -52,6 +53,7 @@ class ChatCommandTest {
 
     private StringWriter sw;
     private CommandLine cmd;
+    private StreamingContext streamingContext;
 
     private CommandRegistry picocliCommands(Terminal terminal) {
         var chatSubCommand = new ChatSubCommand(terminal);
@@ -70,7 +72,8 @@ class ChatCommandTest {
         SystemRegistry systemRegistry = new SystemRegistryImpl(new DefaultParser().regexCommand(CliConfiguration.REGEX_COMMAND), terminal, workDir, null);
         systemRegistry.setCommandRegistries(picocliCommands);
         systemRegistry.register("/?", picocliCommands);
-        ChatCommand chatCommand = new ChatCommand(chatService, lineReader, ollamaChatProperties, systemRegistry);
+        streamingContext = new StreamingContext();
+        ChatCommand chatCommand = new ChatCommand(chatService, lineReader, ollamaChatProperties, systemRegistry, streamingContext);
         cmd = new CommandLine(chatCommand);
         cmd.setOut(pw);
         cmd.setErr(pw);
@@ -160,5 +163,23 @@ class ChatCommandTest {
         // Then
         assertThat(exitCode).isZero();
         verify(lineReader).readLine("sc> ");
+    }
+
+    @Test
+    void shouldCancelStreaming_whenInterrupted() throws Exception {
+        when(ollamaChatProperties.getModel()).thenReturn("llama2");
+        Flux<String> flux = Flux.interval(java.time.Duration.ofMillis(50))
+                .map(i -> "chunk" + i)
+                .take(5);
+        when(chatService.sendAndStreamMessage(any(), any(), any())).thenReturn(flux);
+
+        Thread t = new Thread(() -> cmd.execute("hello"));
+        t.start();
+        Thread.sleep(80); // wait for a couple chunks
+        streamingContext.cancel();
+        t.join(1000);
+
+        assertThat(sw.toString()).startsWith("chunk0");
+        assertThat(sw.toString()).doesNotContain("chunk4");
     }
 }

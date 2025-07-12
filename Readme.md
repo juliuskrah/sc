@@ -58,6 +58,7 @@ sc chat
 sc> Hello, how are you?
 Hello! I'm functioning as intended, thank you. How can I assist you today?
 ```
+Press `Ctrl+C` during a streamed response to cancel generation and return to the prompt.
 
 ## `config`
 

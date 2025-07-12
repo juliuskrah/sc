@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import org.jline.console.SystemRegistry;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
@@ -22,6 +23,7 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
+import org.sc.ai.cli.chat.StreamingContext;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;
@@ -41,6 +43,7 @@ public class ChatCommand implements Runnable {
     private final OllamaChatProperties ollamaChatProperties;
     private final LineReader reader;
     private final SystemRegistry systemRegistry;
+    private final StreamingContext streamingContext;
     @Parameters(arity = "0..1", paramLabel = "MESSAGE", description = "Message to send")
     private String message;
     @Option(names = { "-m",
@@ -71,19 +74,35 @@ public class ChatCommand implements Runnable {
         model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
         logger.debug("LLM model: {}", model);
         var streamingResponse = chatService.sendAndStreamMessage(userMessage, model, conversationId);
-        streamingResponse.toStream().forEach(chunk -> {
+        var latch = new CountDownLatch(1);
+        var disposable = streamingResponse.subscribe(chunk -> {
             writer.print(Ansi.AUTO.string(chunk));
             writer.flush();
+        }, error -> {
+            logger.error("Error streaming response", error);
+            writer.println();
+            latch.countDown();
+        }, () -> {
+            writer.println();
+            latch.countDown();
         });
-        writer.println();
+        streamingContext.register(disposable, latch);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            streamingContext.clear();
+        }
     }
 
     public ChatCommand(ChatService chatService, LineReader reader, OllamaChatProperties ollamaChatProperties,
-            SystemRegistry systemRegistry) {
+            SystemRegistry systemRegistry, StreamingContext streamingContext) {
         this.chatService = chatService;
         this.reader = reader;
         this.ollamaChatProperties = ollamaChatProperties;
         this.systemRegistry = systemRegistry;
+        this.streamingContext = streamingContext;
     }
 
     @Override
