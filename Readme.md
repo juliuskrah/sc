@@ -27,23 +27,11 @@ Requires Java 22+ (JDK 16+ for JPackage):
 ```bash
 git clone https://github.com/juliuskrah/sc.git
 cd sc
-./gradlew bootJar
-./gradlew jreleaserAssemble --assembler=jpackage
+./gradlew clean bootJar
+./gradlew buildJPackageInstaller  
 ```
 
-The installer will be available in `build/jreleaser/assemble/sc/jpackage/`.
-
-## Release Information
-
-This project uses automated releases with semantic versioning and optimized JPackage builds. See [RELEASE.md](RELEASE.md) for detailed information about the release process and [OPTIMIZATION.md](OPTIMIZATION.md) for performance optimizations.
-
-**Current release stage: ALPHA** - The project is in active development.
-
-### Performance Optimizations
-- **Layered JARs**: Optimized dependency management and caching
-- **AOT Compilation**: Faster startup with ahead-of-time processing
-- **JAR Extraction**: Efficient structure for JPackage builds
-- **JVM Tuning**: Optimized memory usage and garbage collection
+The installer will be available in `build/jpackage/`.
 
 <details>
 <summary><strong>Table of Contents</strong></summary>
