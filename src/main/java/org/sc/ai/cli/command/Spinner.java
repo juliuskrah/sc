@@ -1,4 +1,4 @@
-package org.sc.ai.cli.chat;
+package org.sc.ai.cli.command;
 
 import java.io.PrintWriter;
 import java.util.concurrent.ScheduledExecutorService;

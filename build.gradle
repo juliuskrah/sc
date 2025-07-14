@@ -49,6 +49,7 @@ dependencies {
 	api 'org.springframework.ai:spring-ai-pdf-document-reader'
 	api 'org.springframework.ai:spring-ai-markdown-document-reader'
 	api 'org.springframework.ai:spring-ai-jsoup-document-reader'
+    api 'org.springframework.ai:spring-ai-vector-store'
 	api "org.jline:jline:${jlineVersion}"
 	api "org.jline:jline-terminal-ffm:${jlineVersion}"
 	api "org.jline:jline-terminal-jni:${jlineVersion}"

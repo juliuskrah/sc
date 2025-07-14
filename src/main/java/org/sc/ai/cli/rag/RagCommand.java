@@ -2,9 +2,11 @@ package org.sc.ai.cli.rag;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
+import org.sc.ai.cli.command.Spinner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -54,9 +56,9 @@ public class RagCommand implements Runnable {
         validateParameters();
         try {
             if (etlTarget == EtlTarget.FILE) {
-                processFileTarget();
+                processFileTarget(Spinner::stop);
             } else {
-                processVectorStoreTarget();
+                processVectorStoreTarget(Spinner::stop);
             }
         } catch (IOException e) {
             if(logger.isErrorEnabled()) {
@@ -77,13 +79,19 @@ public class RagCommand implements Runnable {
         }
     }
 
-    private void processFileTarget() throws IOException {
+    private void processFileTarget(Consumer<Spinner> callback) throws IOException {
+        var spinner = new Spinner(spec.commandLine().getOut(), "Processing...");
+        spinner.start();
         Path result = ragService.processToFile(document, outputFile);
+        callback.accept(spinner);
         spec.commandLine().getOut().println("Processed document saved to: " + result);
     }
 
-    private void processVectorStoreTarget() throws IOException {
+    private void processVectorStoreTarget(Consumer<Spinner> callback) throws IOException {
+        var spinner = new Spinner(spec.commandLine().getOut(), "Processing...");
+        spinner.start();
         ragService.processToVectorStore(document);
+        callback.accept(spinner);
         spec.commandLine().getOut().println("Document processed and saved to vector store");
     }
 

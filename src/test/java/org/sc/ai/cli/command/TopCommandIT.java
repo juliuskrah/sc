@@ -14,7 +14,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest(args = {"--base-url=http://localhost:11432"})
+@SpringBootTest(args = {"--base-url=http://localhost:11432"}, properties = "spring.ai.ollama.init.pull-model-strategy=never")
 class TopCommandIT {
 	
 	private void bindAndAssert(Environment env, String expectedBaseUrl) {

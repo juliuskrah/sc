@@ -9,6 +9,7 @@ import java.time.Duration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.sc.ai.cli.command.Spinner;
 
 /**
  * Unit tests for {@link Spinner}.
