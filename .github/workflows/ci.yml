@@ -38,7 +38,15 @@ jobs:
         
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-        
+
+      - name: Restore Ollama models
+        uses: actions/cache@v4
+        with:
+          path: "${HOME}/.ollama/models"
+          key: ollama-${{ runner.os }}-${{ hashFiles('**/AiTestConfiguration.java') }}
+          restore-keys: |
+            ollama-${{ runner.os }}-
+
       - name: Run tests
         run: ./gradlew test
         

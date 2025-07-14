@@ -1,3 +1,5 @@
+[![Release](https://github.com/juliuskrah/sc/actions/workflows/release.yml/badge.svg)](https://github.com/juliuskrah/sc/actions/workflows/release.yml)
+
 # Introduction
 
 `sc` is a cli application that makes it easy to interact with LLMs from multiple providers, including Ollama and OpenAI.
@@ -179,6 +181,7 @@ This command allows you to interact with the RAG (Retrieval-Augmented Generation
 * `-o, --output`: Specify output filename for the RAG response. This option must be used in conjunction with the `--etl=file` option.
 * `--etl`: Specify the ETL (Extract, Transform, Load) operation target. The available targets are:
   - `file`: Write output to a file from the local filesystem (default).
+  - `vectorStore`: Write output to a vector store.
 
 ### Parameters <a name="rag-parameters"></a>
 
@@ -207,6 +210,8 @@ sc rag --etl=file --output output.txt file:///path/to/plain.txt
 sc rag --etl=file --output output.txt https://raw.githubusercontent.com/juliuskrah/quartz-manager/refs/heads/master/README.md
 # Load a JSON document from the local filesystem and write the response to a file
 sc rag --etl=file --output output.txt file:///path/to/document.json
+# Load a PDF document from the local filesystem and write the response to a vector store
+sc rag --etl=vectorStore file:///path/to/document.pdf
 ```
 
 ## Global Options
@@ -294,8 +299,7 @@ cd build/docs && python -m http.server 8000
     - `azure://<container>/<blob>` - Azure Blob Storage document
     - `github://<owner>/<repo>/<path>` - GitHub document
     - `gitlab://<owner>/<repo>/<path>` - GitLab document
-- `rag vectorStore`: Support for different vector databases:
-    - `--etl=vectorStore`: Write output to a vector store. Used in a rag system to store and retrieve documents.
+    - `bitbucket://<owner>/<repo>/<path>` - Bitbucket document
 
 # Working with Documentation
 

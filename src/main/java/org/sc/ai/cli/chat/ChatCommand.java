@@ -23,6 +23,7 @@ import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
+import org.sc.ai.cli.command.Spinner;
 import org.slf4j.Logger;
 
 import picocli.CommandLine;

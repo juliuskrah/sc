@@ -8,8 +8,15 @@ spring:
     model:
       chat: ollama
     ollama:
+      chat:
+        model: qwen2.5:0.5b
       init:
         pull-model-strategy: never
+        embedding:
+          include: true
+      embedding:
+        options:
+          model: snowflake-arctic-embed:22m
 sc:
   config:
     dir: ${SC_CONFIG_DIR:${user.dir}/.sc}
