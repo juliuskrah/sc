@@ -279,30 +279,16 @@ cd build/docs && python -m http.server 8000
 
 - `chat`: Attach files when chatting with the model. Support the following document types:
   - `image/*` - Image files
-  - `text/*` - Text files
   - `application/pdf` - PDF files
-  - `application/vnd.openxmlformats-officedocument.wordprocessingml.document` - Word documents
-  - `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` - Excel spreadsheets
-  - `application/vnd.openxmlformats-officedocument.presentationml.presentation` - PowerPoint presentations
-  - `application/zip` - ZIP files
-  - `application/json` - JSON files
 - `chat memory`: Support for different memory backends:
   - `rdbms`: Relational database management system (e.g. PostgreSQL, MySQL)
-  - `neo4j`: Neo4j graph database
-  - `cassandra`: Apache Cassandra
 - `chat LLM`: Support for different LLM providers:
-  - `google`: Google Gemini API
+  - `google`: Google Vertex AI
   - `openai`: OpenAI API
 - `chat agent`: Implement an agent that can perform tasks based on user input and context.
-  - `tools`: Tool calling support for the agent.
   - `mcp`: Model context protocol support for the agent.
-- `chat rag`: Leverage RAG (Retrieval-Augmented Generation) to enhance the chat experience by retrieving relevant documents and information from a vector store.
 - `rag`: Document sources from:
     - `s3://<bucket>/<key>` - S3 document
-    - `gcs://<bucket>/<key>` - GCS document
-    - `azure://<container>/<blob>` - Azure Blob Storage document
-    - `gitlab://<owner>/<repo>/<path>` - GitLab document
-    - `bitbucket://<owner>/<repo>/<path>` - Bitbucket document
 
 # Working with Documentation
 

@@ -49,7 +49,7 @@ dependencies {
 	api 'org.springframework.ai:spring-ai-pdf-document-reader'
 	api 'org.springframework.ai:spring-ai-markdown-document-reader'
 	api 'org.springframework.ai:spring-ai-jsoup-document-reader'
-    api 'org.springframework.ai:spring-ai-vector-store'
+    api 'org.springframework.ai:spring-ai-advisors-vector-store'
 	api "org.jline:jline:${jlineVersion}"
 	api "org.jline:jline-terminal-ffm:${jlineVersion}"
 	api "org.jline:jline-terminal-jni:${jlineVersion}"
@@ -61,6 +61,7 @@ dependencies {
 	testImplementation 'org.springframework.ai:spring-ai-spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:ollama:1.21.0'
     testImplementation 'org.awaitility:awaitility'
+    testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     
     // OpenRewrite dependencies
