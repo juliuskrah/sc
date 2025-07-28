@@ -212,6 +212,10 @@ sc rag --etl=file --output output.txt https://raw.githubusercontent.com/juliuskr
 sc rag --etl=file --output output.txt file:///path/to/document.json
 # Load a PDF document from the local filesystem and write the response to a vector store
 sc rag --etl=vectorStore file:///path/to/document.pdf
+# Load a Markdown document from a GitHub URL and write the response to a vector store
+sc rag --etl=vectorStore "github://spring-projects/spring-framework/contents/README.md"
+# Load a Markdown document from a GitHub ref URL and write the response to a file
+sc rag --etl=file --output output.txt "github://spring-projects/spring-framework/contents/README.md?ref=main"
 ```
 
 ## Global Options
@@ -297,7 +301,6 @@ cd build/docs && python -m http.server 8000
     - `s3://<bucket>/<key>` - S3 document
     - `gcs://<bucket>/<key>` - GCS document
     - `azure://<container>/<blob>` - Azure Blob Storage document
-    - `github://<owner>/<repo>/<path>` - GitHub document
     - `gitlab://<owner>/<repo>/<path>` - GitLab document
     - `bitbucket://<owner>/<repo>/<path>` - Bitbucket document
 
