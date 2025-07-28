@@ -36,6 +36,17 @@ Ask a single question without entering REPL mode:
 sc chat "What is machine learning?"
 ----
 
+=== Multimodal Conversations
+Use images in your chat sessions:
+
+[source,bash]
+----
+sc chat
+sc> Analyze this screenshot @./screenshot.png
+sc> Compare these two diagrams @"chart A.jpg" @'chart B.png'
+sc> What do you see in @/path/to/image.webp?
+----
+
 === Using Different Models
 Specify a different model for specialized tasks:
 
@@ -51,6 +62,19 @@ Use RAG to process and understand documents:
 ----
 sc rag file:///path/to/document.pdf -o out.txt
 sc rag https://example.com/article.html --etl=vectorStore
+----
+
+=== Enhanced Document-Aware Chat
+Combine RAG processing with multimodal chat:
+
+[source,bash]
+----
+# First, process relevant documentation
+sc rag https://docs.spring.io/spring-ai/reference/ --etl=vectorStore
+
+# Then use both text and images in conversation
+sc chat
+sc> Based on the Spring AI docs, explain this architecture diagram @./spring-ai-arch.png
 ----
 
 === Configuration Management

@@ -5,17 +5,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
 
+import org.jline.builtins.Completers;
 import org.jline.console.CommandRegistry;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.SystemRegistryImpl;
+import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.Parser;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.sc.ai.cli.chat.ChatSubCommand;
 import org.sc.ai.cli.chat.StreamingContext;
+import org.sc.ai.cli.chat.multimodal.FilePathCompleter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,9 +69,17 @@ public class CliConfiguration {
     LineReader lineReader(Terminal terminal, SystemRegistry systemRegistry,
             @Value("${spring.application.name}") String appName) throws IOException {
         Path historyFile = Paths.get(configDirectory.getURI()).resolve("history");
+        
+        // Combine system registry completer with file path completer
+        Completer combinedCompleter = new AggregateCompleter(
+            systemRegistry.completer(),
+            new FilePathCompleter(), 
+            new Completers.FileNameCompleter()
+        );
+        
         return LineReaderBuilder.builder()
                 .terminal(terminal)
-                .completer(systemRegistry.completer())
+                .completer(combinedCompleter)
                 .parser(parser)
                 .option(LineReader.Option.AUTO_FRESH_LINE, true)
                 .option(LineReader.Option.HISTORY_BEEP, false)

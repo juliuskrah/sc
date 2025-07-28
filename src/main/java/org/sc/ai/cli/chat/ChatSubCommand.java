@@ -16,7 +16,7 @@ import picocli.CommandLine.Spec;
                 "Hit @|fg(yellow) <TAB>|@ to see available commands",
                 "Hit @|fg(yellow) ALT+S|@ to toggle tailtips",
                 "" }, footer = { "@|fg(240) Use|@ @|fg(yellow) \"\"\"|@ @|fg(240) to begin a multi-line message.|@",
-                                "@|fg(240) Use|@ @|fg(yellow),italic /path/to/file|@ @|fg(240) to include|@ @|fg(240),bold .jpg, .png,|@ @|fg(240) or|@ @|fg(240),bold .webp|@ @|fg(240) images.|@",
+                                "@|fg(240) Use|@ @|fg(yellow),italic @/path/to/file|@ @|fg(240) to include|@ @|fg(240),bold .jpg, .png,|@ @|fg(240) or|@ @|fg(240),bold .webp|@ @|fg(240) images.|@",
                 })
 public class ChatSubCommand implements Runnable {
         final PrintWriter out;

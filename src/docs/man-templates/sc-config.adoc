@@ -9,6 +9,63 @@ include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-synopsis]
 
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-description]
 
+== Usage Examples
+
+=== Initialize Configuration
+Set up initial configuration with defaults:
+
+[source,bash]
+----
+sc config init
+----
+
+=== View Configuration
+Display current configuration values:
+
+[source,bash]
+----
+sc config --get provider
+sc config --get providers.ollama.model
+sc config --file
+----
+
+=== Set Configuration Values
+Configure Ollama settings:
+
+[source,bash]
+----
+sc config --set provider=ollama
+sc config --set providers.ollama.model=llama3.2
+sc config --set providers.ollama.base-url=http://localhost:11434
+----
+
+== Configuration File
+
+The configuration file is located at `$HOME/.sc/config` and uses a hierarchical key-value format:
+
+[source,yaml]
+----
+provider: ollama
+providers:
+  ollama:
+    base-url: http://localhost:11434
+    model: llama3.2
+chat-memory:
+  jdbc:
+    url: jdbc:hsqldb:mem:testdb
+----
+
+== Common Settings
+
+`provider`::
+  The AI provider to use (default: ollama)
+
+`providers.ollama.model`::
+  Default model for Ollama (e.g., llama3.2, codellama, mistral)
+
+`providers.ollama.base-url`::
+  Ollama server endpoint (default: http://localhost:11434)
+
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-options]
 
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-arguments]
@@ -16,5 +73,9 @@ include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-arguments
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-commands]
 
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-exit-status]
+
+== See Also
+
+*sc*(1), *sc-chat*(1), *sc-rag*(1)
 
 include::{includedir}/sc-config.adoc[tag=picocli-generated-man-section-footer]
