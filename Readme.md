@@ -93,6 +93,14 @@ Hello! I'm functioning as intended, thank you. How can I assist you today?
 ```
 Press `Ctrl+C` during a streamed response to cancel generation and return to the prompt.
 
+Multi-modal prompts are supported. You can include images in your messages.
+
+```bash
+sc chat
+sc> Describe this image @path/to/image.png
+This is an image of two birds standing on a beach
+```
+
 ## `config`
 
 This command allows you to view or set the configuration for the CLI. You can use it to manage settings such as the Ollama API endpoint and other CLI-specific configurations.
@@ -189,6 +197,7 @@ This command allows you to interact with the RAG (Retrieval-Augmented Generation
   Documents can be loaded from various sources; the following protocols are supported when loading documents:
   - `file:///path/to/file`: Local document (absolute path)
   - `https://path/to/page`: Remote document (only HTTPS is supported)
+  - `github://user/repo/contents/path/to/file`: GitHub document
 
 The following document formats are supported:
   - `application/pdf`: PDF files
@@ -278,7 +287,6 @@ cd build/docs && python -m http.server 8000
 # Future Work
 
 - `chat`: Attach files when chatting with the model. Support the following document types:
-  - `image/*` - Image files
   - `application/pdf` - PDF files
 - `chat memory`: Support for different memory backends:
   - `rdbms`: Relational database management system (e.g. PostgreSQL, MySQL)

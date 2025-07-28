@@ -19,6 +19,7 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.Widget;
 import org.jline.widget.TailTipWidgets;
 import org.jline.widget.Widgets;
+import org.sc.ai.cli.chat.multimodal.PromptParser;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 import org.sc.ai.cli.command.ChatbotVersionProvider;
@@ -44,6 +45,7 @@ public class ChatCommand implements Runnable {
     private final LineReader reader;
     private final SystemRegistry systemRegistry;
     private final StreamingContext streamingContext;
+    private final PromptParser promptParser = new PromptParser();
     @Parameters(arity = "0..1", paramLabel = "MESSAGE", description = "Message to send")
     private String message;
     @Option(names = { "-m",
@@ -72,13 +74,16 @@ public class ChatCommand implements Runnable {
 
     private void streamModelResponse(String userMessage, String conversationId, PrintWriter writer) {
         model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
-        logger.debug("LLM model: {}", model);
+        logger.debug("Using '{}' model", model);
+
+        // Parse the message for potential file attachments
+        var parsedPrompt = promptParser.parse(userMessage);
         
         // Start spinner to indicate processing (delayed start)
         var spinner = new Spinner(writer, "Thinking...");
         spinner.start();
         
-        var streamingResponse = chatService.sendAndStreamMessage(userMessage, model, conversationId);
+        var streamingResponse = chatService.sendAndStreamMessage(parsedPrompt, model, conversationId);
         var latch = new CountDownLatch(1);
         
         var disposable = streamingResponse.subscribe(chunk -> {
@@ -95,7 +100,7 @@ public class ChatCommand implements Runnable {
             writer.println();
             latch.countDown();
         });
-        streamingContext.register(disposable, latch);
+        streamingContext.register(disposable, latch, spinner);
         try {
             latch.await();
         } catch (InterruptedException _) {

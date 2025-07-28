@@ -9,12 +9,129 @@ include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-synopsis]
 
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-description]
 
+== Overview
+
+The RAG (Retrieval-Augmented Generation) command processes documents and extracts relevant information to enhance AI conversations. It supports various document formats and can output processed content to files or vector stores for later retrieval.
+
+== Usage Modes
+
+=== File Processing
+
+Process documents and save the extracted content to a text file:
+
+[source,bash]
+----
+sc rag file:///document.pdf -o output.txt
+sc rag https://example.com/article.html -o extracted.txt
+----
+
+=== Vector Store Processing
+
+Process documents directly into a vector store for enhanced retrieval:
+
+[source,bash]
+----
+sc rag https://api.github.com/repos/user/repo --etl=vectorStore
+sc rag file:///absolute/path/to/data.json --etl=vectorStore
+----
+
+== Supported Formats
+
+=== Document Types
+- **PDF files**: `.pdf`
+- **Markdown files**: `.md`, `.markdown`
+- **Text files**: `.txt`
+- **HTML content**: `.html`, `.htm`
+- **JSON data**: `.json`
+
+=== Input Sources
+- **Local files**: `file:///path/to/document.pdf`
+- **HTTP/HTTPS URLs**: `https://example.com/document.html`
+- **GitHub**: `github://username/repository/contents/file-path`
+
+== Examples
+
+Process a local PDF to text file:
+
+[source,bash]
+----
+sc rag file:///home/user/documents/manual.pdf -o extracted.txt
+----
+
+Extract content from a web page:
+
+[source,bash]
+----
+sc rag https://docs.spring.io/spring-ai/reference/index.html -o spring-ai-docs.txt
+----
+
+Load documents into vector store:
+
+[source,bash]
+----
+sc rag github://spring-projects/spring-framework/contents/README.md --etl=vectorStore
+----
+
+Process multiple document types:
+
+[source,bash]
+----
+sc rag file:///research-paper.pdf --etl=vectorStore
+sc rag file:///project-documentation.md -o summary.txt
+sc rag https://docs.spring.io/spring-ai/reference/index.html --etl=vectorStore
+----
+
+== Processing Pipeline
+
+The RAG command uses a sophisticated processing pipeline:
+
+1. **Document Loading**: Supports multiple formats and sources
+2. **Content Extraction**: Extracts text while preserving structure
+3. **Text Splitting**: Breaks content into manageable chunks
+4. **Embedding Generation**: Creates vector embeddings for semantic search
+5. **Storage**: Saves to files or vector stores based on output type
+
+== Integration with Chat
+
+Documents processed with `--etl=vectorStore` become available for enhanced chat sessions:
+
+[source,bash]
+----
+# Process documentation
+sc rag https://docs.spring.io/spring-boot/index.html --etl=vectorStore
+
+# Now chat with enhanced context
+sc chat "How do I configure Spring Boot actuators?"
+----
+
+The chat command automatically retrieves relevant information from processed documents to provide more accurate and contextual responses.
+
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-options]
 
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-arguments]
 
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-commands]
 
+== Error Handling
+
+Common issues and solutions:
+
+**File not found**::
+  Verify the file path and ensure the file exists
+
+**Unsupported format**::
+  Check that the file extension is supported
+
+**Network errors**::
+  Verify URL accessibility and network connectivity
+
+**Permission denied**::
+  Ensure read permissions for input files and write permissions for output directory
+
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-exit-status]
+
+== See Also
+
+*sc*(1), *sc-chat*(1), *sc-config*(1)
 
 include::{includedir}/sc-rag.adoc[tag=picocli-generated-man-section-footer]
