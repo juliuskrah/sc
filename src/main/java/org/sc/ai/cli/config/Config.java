@@ -28,7 +28,7 @@ public record Config(
     public enum ProviderType {
         OLLAMA("ollama"),
         OPENAI("openai"),
-        BEDROCK("bedrock");
+        BEDROCK("bedrock-converse");
 
         private final String value;
 
