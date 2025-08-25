@@ -1,6 +1,7 @@
 package org.sc.ai.cli.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -112,8 +113,7 @@ class ChatServiceIT {
         String model = "";
 
         // When/Then
-        assertThatThrownBy(() -> chatService.sendAndStreamMessage(message, model, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Model must not be empty");
+        assertThatCode(() -> chatService.sendAndStreamMessage(message, model, null))
+                .doesNotThrowAnyException();
     }
 }

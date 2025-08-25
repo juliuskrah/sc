@@ -21,12 +21,12 @@ public class ProviderMixin {
     private String baseUrl;
     private static final Logger logger = LoggerFactory.getLogger(ProviderMixin.class);
     
-    private static ProviderMixin topLevelOllamaMixin(CommandSpec commandSpec) {
-        return ((TopCommand) commandSpec.root().userObject()).ollamaMixin;
+    private static ProviderMixin topLevelProviderMixin(CommandSpec commandSpec) {
+        return ((TopCommand) commandSpec.root().userObject()).providerMixin;
     }
 
     private void init() {
-        logger.debug("Using Ollama base-url: {}", getBaseUrl());
+        logger.debug("Using provider base-url: {}", getBaseUrl());
     }
     
     public String getBaseUrl() {
@@ -35,11 +35,11 @@ public class ProviderMixin {
     
     @Option(names = { "--base-url" }, paramLabel = "BASE_URL", description = "Provider API endpoint")
     public void setBaseUrl(String baseUrl) {
-        topLevelOllamaMixin(mixee).baseUrl = baseUrl;
+        topLevelProviderMixin(mixee).baseUrl = baseUrl;
     }
 
     public static int executionStrategy(ParseResult parseResult) {
-        topLevelOllamaMixin(parseResult.commandSpec()).init();
+        topLevelProviderMixin(parseResult.commandSpec()).init();
         return new CommandLine.RunLast().execute(parseResult);
     }
 }

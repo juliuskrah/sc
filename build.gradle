@@ -34,6 +34,7 @@ ext {
     set('scVersion', project.version)
     set('picocliVersion', "4.7.7")
     set('jlineVersion', "3.30.0")
+    set('awsSdkVersion', "2.32.29")
 }
 
 configurations {
@@ -43,6 +44,9 @@ configurations {
 dependencies {
     api 'org.springframework.boot:spring-boot-starter'
     api('org.springframework.ai:spring-ai-starter-model-ollama') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
+    }
+    api('org.springframework.ai:spring-ai-starter-model-bedrock-converse') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-webflux'
     }
 	api 'org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc'
@@ -55,6 +59,8 @@ dependencies {
 	api "org.jline:jline-terminal-jni:${jlineVersion}"
     api "info.picocli:picocli-spring-boot-starter:${picocliVersion}"
 	api "info.picocli:picocli-shell-jline3:${picocliVersion}"
+    api "software.amazon.awssdk:sso:${awsSdkVersion}"
+    api "software.amazon.awssdk:ssooidc:${awsSdkVersion}"
 	annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
     generateConfig "info.picocli:picocli-codegen:${picocliVersion}"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

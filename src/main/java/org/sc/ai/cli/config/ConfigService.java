@@ -56,6 +56,7 @@ public class ConfigService {
         return switch (provider.toLowerCase()) {
             case "ollama" -> Config.ProviderType.OLLAMA;
             case "openai" -> Config.ProviderType.OPENAI;
+            case "bedrock" -> Config.ProviderType.BEDROCK;
             default -> throw new IllegalArgumentException("Unknown provider: " + provider);
         };
     }

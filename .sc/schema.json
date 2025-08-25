@@ -8,7 +8,8 @@
             "type": "string",
             "enum": [
                 "ollama",
-                "openai"
+                "openai",
+                "bedrock-converse"
             ],
             "description": "The ID of the provider."
         },

@@ -25,7 +25,7 @@ public class ConfigCommand implements Runnable {
     @Spec
     private CommandLine.Model.CommandSpec spec;
     @Mixin
-    private ProviderMixin ollamaMixin;
+    private ProviderMixin providerMixin;
     @ArgGroup(exclusive = true, multiplicity = "0..1")
     private Options options;
 
