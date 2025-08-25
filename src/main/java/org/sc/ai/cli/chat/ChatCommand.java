@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import org.jline.console.SystemRegistry;
@@ -20,7 +19,6 @@ import org.jline.reader.Widget;
 import org.jline.widget.TailTipWidgets;
 import org.jline.widget.Widgets;
 import org.sc.ai.cli.chat.multimodal.PromptParser;
-import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import org.springframework.stereotype.Component;
 import org.sc.ai.cli.command.ChatbotVersionProvider;
 import org.sc.ai.cli.command.ProviderMixin;
@@ -41,15 +39,13 @@ public class ChatCommand implements Runnable {
     private static final String PROMPT = "sc> ";
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ChatCommand.class);
     private final ChatService chatService;
-    private final OllamaChatProperties ollamaChatProperties;
     private final LineReader reader;
     private final SystemRegistry systemRegistry;
     private final StreamingContext streamingContext;
     private final PromptParser promptParser = new PromptParser();
     @Parameters(arity = "0..1", paramLabel = "MESSAGE", description = "Message to send")
     private String message;
-    @Option(names = { "-m",
-            "--model" }, paramLabel = "MODEL", description = "Specify LLM to use")
+    @Option(names = { "-m", "--model" }, paramLabel = "MODEL", description = "Specify LLM to use")
     private String model;
     @Mixin
     private ProviderMixin ollamaMixin;
@@ -73,8 +69,9 @@ public class ChatCommand implements Runnable {
     }
 
     private void streamModelResponse(String userMessage, String conversationId, PrintWriter writer) {
-        model = Optional.ofNullable(model).orElse(ollamaChatProperties.getModel());
-        logger.debug("Using '{}' model", model);
+        if (model != null && !model.isBlank()) {
+            logger.debug("Using '{}' model", model);
+        }
 
         // Parse the message for potential file attachments
         var parsedPrompt = promptParser.parse(userMessage);
@@ -111,11 +108,10 @@ public class ChatCommand implements Runnable {
         }
     }
 
-    public ChatCommand(ChatService chatService, LineReader reader, OllamaChatProperties ollamaChatProperties,
+    public ChatCommand(ChatService chatService, LineReader reader,
             SystemRegistry systemRegistry, StreamingContext streamingContext) {
         this.chatService = chatService;
         this.reader = reader;
-        this.ollamaChatProperties = ollamaChatProperties;
         this.systemRegistry = systemRegistry;
         this.streamingContext = streamingContext;
     }

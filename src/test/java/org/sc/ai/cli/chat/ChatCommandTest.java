@@ -5,6 +5,7 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -39,7 +40,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.sc.ai.cli.CliConfiguration;
 import org.sc.ai.cli.chat.multimodal.ParsedPrompt;
-import org.springframework.ai.model.ollama.autoconfigure.OllamaChatProperties;
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
 import reactor.core.publisher.Flux;
@@ -49,8 +49,6 @@ class ChatCommandTest {
 
     @Mock
     private ChatService chatService;
-    @Mock
-    private OllamaChatProperties ollamaChatProperties;
     Terminal terminal;
     LineReader lineReader;
 
@@ -78,28 +76,10 @@ class ChatCommandTest {
         systemRegistry.setCommandRegistries(picocliCommands);
         systemRegistry.register("/?", picocliCommands);
         streamingContext = new StreamingContext();
-        ChatCommand chatCommand = new ChatCommand(chatService, lineReader, ollamaChatProperties, systemRegistry, streamingContext);
+        ChatCommand chatCommand = new ChatCommand(chatService, lineReader, systemRegistry, streamingContext);
         cmd = new CommandLine(chatCommand);
         cmd.setOut(pw);
         cmd.setErr(pw);
-    }
-
-    @Test
-    void shouldUseDefaultModel_whenModelNotSpecified() {
-        // Given
-        String defaultModel = "llama2";
-        when(ollamaChatProperties.getModel()).thenReturn(defaultModel);
-        when(chatService.sendAndStreamMessage(any(ParsedPrompt.class), anyString(), anyString()))
-                .thenReturn(Flux.just("Mock response"));
-
-        // When
-        String message = "send this message";
-        int exitCode = cmd.execute(message);
-
-        // Then
-        assertThat(sw).hasToString("Mock response\n");
-        verify(chatService).sendAndStreamMessage(any(ParsedPrompt.class), anyString(), anyString());
-        assertThat(exitCode).isZero();
     }
 
     @Test
@@ -171,7 +151,6 @@ class ChatCommandTest {
 
     @Test
     void shouldCancelStreaming_whenInterrupted() throws InterruptedException {
-        when(ollamaChatProperties.getModel()).thenReturn("llama2");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         var future = executor.submit(() -> {
             try {
@@ -183,7 +162,7 @@ class ChatCommandTest {
         Flux<String> flux = Flux.interval(java.time.Duration.ofMillis(50))
                 .map(i -> "chunk" + i)
                 .take(5);
-        when(chatService.sendAndStreamMessage(any(ParsedPrompt.class), anyString(), anyString())).thenReturn(flux);
+        when(chatService.sendAndStreamMessage(any(ParsedPrompt.class), isNull(), anyString())).thenReturn(flux);
 
         Thread t = new Thread(() -> cmd.execute("hello"));
         t.start();
@@ -196,10 +175,8 @@ class ChatCommandTest {
 
     @Test
     void shouldDisplaySpinner_whenWaitingForResponse() {
-        // Given
-        when(ollamaChatProperties.getModel()).thenReturn("llama2");
         // Simulate a delayed response that will trigger the spinner
-        when(chatService.sendAndStreamMessage(any(ParsedPrompt.class), anyString(), anyString()))
+        when(chatService.sendAndStreamMessage(any(ParsedPrompt.class), isNull(), anyString()))
                 .thenReturn(Flux.just("Response").delayElements(java.time.Duration.ofMillis(200)));
 
         // When
@@ -210,6 +187,6 @@ class ChatCommandTest {
         String output = sw.toString();
         // The spinner should have cleared itself and the response should be visible
         assertThat(output).contains("Response");
-        verify(chatService).sendAndStreamMessage(any(ParsedPrompt.class), anyString(), anyString());
+        verify(chatService).sendAndStreamMessage(any(ParsedPrompt.class), isNull(), anyString());
     }
 }

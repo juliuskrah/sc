@@ -50,9 +50,8 @@ public class ChatService {
                 .build();
     }
 
-    public Flux<String> sendAndStreamMessage(String message, String model, @Nullable String conversationId) {
+    public Flux<String> sendAndStreamMessage(String message, @Nullable String model, String conversationId) {
         Assert.hasText(message, "Message must not be empty");
-        Assert.hasText(model, "Model must not be empty");
         logger.info("Sending message: \"{}\" using model: {}", message, model);
         if (vectorStore instanceof SimpleVectorStore simpleVectorStore) {
             try (var files = Files.walk(vectorStoreStorageDirectory.getFile().toPath(), 1)
@@ -62,14 +61,17 @@ public class ChatService {
                 logger.error("Failed to load vector store files", e);
             } 
         }
-        var options = OllamaOptions.builder()
-                .model(model)
-                .build();
-        return chatClient.prompt().user(message)
-                .options(options)
+        var spec = chatClient.prompt().user(message)
                 .advisors(advisors -> advisors.param(ChatMemory.CONVERSATION_ID,
-                        Optional.ofNullable(conversationId).orElse(UUID.randomUUID().toString())))
-                .stream().content();
+                        Optional.ofNullable(conversationId).orElse(UUID.randomUUID().toString())));
+        if (model != null && !model.isBlank()) {
+            var options = OllamaOptions.builder()
+                    .model(model)
+                    .build();
+            spec.options(options);
+        }
+
+        return spec.stream().content();
     }
 
     /**
@@ -80,7 +82,7 @@ public class ChatService {
      * @param conversationId the conversation ID (optional)
      * @return a Flux of response content
      */
-    public Flux<String> sendAndStreamMessage(ParsedPrompt parsedPrompt, String model, @Nullable String conversationId) {
+    public Flux<String> sendAndStreamMessage(ParsedPrompt parsedPrompt, @Nullable String model, @Nullable String conversationId) {
         if (!parsedPrompt.hasFiles()) {
             // No files, use the simple text-only method
             return sendAndStreamMessage(parsedPrompt.textContent(), model, conversationId);
