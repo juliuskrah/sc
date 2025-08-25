@@ -103,22 +103,23 @@ public class ChatService {
                 } 
             }
         }
-        
-        var options = OllamaOptions.builder()
-                .model(model)
-                .build();
-                
+
         // Convert file paths to Media objects
         var mediaObjects = parsedPrompt.filePaths().stream()
                 .map(this::createMediaFromPath)
                 .filter(Objects::nonNull)
                 .toArray(Media[]::new);
-        
-        return chatClient.prompt().user(u -> u.text(parsedPrompt.textContent()).media(mediaObjects))
-                .options(options)
+
+         var spec = chatClient.prompt().user(u -> u.text(parsedPrompt.textContent()).media(mediaObjects))
                 .advisors(advisors -> advisors.param(ChatMemory.CONVERSATION_ID,
-                        Optional.ofNullable(conversationId).orElse(UUID.randomUUID().toString())))
-                .stream().content();
+                        Optional.ofNullable(conversationId).orElse(UUID.randomUUID().toString())));
+        if (model != null && !model.isBlank()) {
+            var options = OllamaOptions.builder()
+                    .model(model)
+                    .build();
+            spec.options(options);
+        }
+        return spec.stream().content();
     }
     
     /**

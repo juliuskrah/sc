@@ -48,7 +48,7 @@ public class ChatCommand implements Runnable {
     @Option(names = { "-m", "--model" }, paramLabel = "MODEL", description = "Specify LLM to use")
     private String model;
     @Mixin
-    private ProviderMixin ollamaMixin;
+    private ProviderMixin providerMixin;
     @Spec
     private CommandLine.Model.CommandSpec spec;
 
